@@ -3,7 +3,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateTransactionDto, UpdateTransactionDto } from './transaction.dto';
+import {
+  CreatePeriodicTransactionDto,
+  CreateTransactionDto,
+  UpdateTransactionDto,
+} from './transaction.dto';
 import { DatabaseService } from '../database/database.service';
 import { Prisma } from '../lib/ormClient/client';
 
@@ -55,6 +59,32 @@ export class TransactionService {
         throw new InternalServerErrorException(error.message);
       }
       throw new InternalServerErrorException('Transaction creation failed');
+    }
+  }
+
+  async createPeriodic(data: CreatePeriodicTransactionDto, userId: string) {
+    try {
+      await this.db.client.transaction.findFirstOrThrow({
+        where: {
+          id: data.transactionId,
+          userId,
+        },
+      });
+
+      return this.db.client.periodic.create({
+        data,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new NotFoundException('Transaction not found');
+        }
+
+        throw new InternalServerErrorException(error.message);
+      }
+      throw new InternalServerErrorException(
+        'Periodic transaction creation failed',
+      );
     }
   }
 

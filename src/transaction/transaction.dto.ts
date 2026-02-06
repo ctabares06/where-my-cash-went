@@ -6,8 +6,9 @@ import {
   IsUUID,
   ValidateIf,
 } from 'class-validator';
-import { Transaction_T } from '../lib/ormClient/enums';
+import { Cycle_T, Transaction_T } from '../lib/ormClient/enums';
 import { Transaction } from 'src/lib/ormClient/client';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateTransactionDto implements Partial<Transaction> {
   @IsInt()
@@ -28,8 +29,6 @@ export class CreateTransactionDto implements Partial<Transaction> {
   @ValidateIf((object: CreateTransactionDto) => {
     const hasCategory = Object.hasOwn(object, 'categoryId');
 
-    console.log('hasCategory', hasCategory, object.categoryId); // Debug log
-
     if (hasCategory) {
       return object.categoryId === undefined || object.categoryId === null;
     }
@@ -39,7 +38,24 @@ export class CreateTransactionDto implements Partial<Transaction> {
   transactionType?: Transaction_T;
 }
 
-export class UpdateTransactionDto {
+export class CreatePeriodicTransactionDto {
+  @IsUUID(4)
+  transactionId!: string;
+
+  @IsEnum(Cycle_T)
+  cycle!: Cycle_T;
+
+  @ValidateIf((object: CreatePeriodicTransactionDto) => {
+    if (object.cycle === Cycle_T.custom) {
+      return false;
+    }
+    return true;
+  })
+  @IsInt()
+  duration?: number;
+}
+
+export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
   @IsOptional()
   @IsInt()
   quantity?: number;
@@ -47,16 +63,4 @@ export class UpdateTransactionDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsOptional()
-  @IsUUID()
-  categoryId?: string;
-
-  @IsOptional()
-  @IsUUID(4, { each: true })
-  tags?: string[];
-
-  @ValidateIf((object: CreateTransactionDto) => object.categoryId !== undefined)
-  @IsEnum(Transaction_T)
-  transaction_type?: Transaction_T;
 }

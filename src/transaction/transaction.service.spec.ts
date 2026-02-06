@@ -3,8 +3,13 @@ import { TransactionService } from './transaction.service';
 import { DatabaseService } from '../database/database.service';
 import { Transaction_T } from '../lib/ormClient/enums';
 import { createMockContext } from '../../test/prisma.mock';
-import type { Transaction } from '../lib/ormClient/client';
+import {
+  type Transaction,
+  type Periodic,
+  Prisma,
+} from '../lib/ormClient/client';
 import { NotFoundException } from '@nestjs/common';
+import { CreatePeriodicTransactionDto } from './transaction.dto';
 
 describe('TransactionService - UT', () => {
   let transactionService: TransactionService;
@@ -220,6 +225,68 @@ describe('TransactionService - UT', () => {
 
       await expect(
         transactionService.findOne('1', 'differentUserId'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createPeriodic', () => {
+    it('should create a periodic transaction when transaction exists', async () => {
+      const transaction: Transaction = {
+        id: '1',
+        quantity: 100,
+        description: 'Test transaction',
+        transactionType: Transaction_T.income,
+        userId: 'userId',
+        createdAt: new Date(),
+        updateAt: new Date(),
+        categoryId: null,
+      };
+
+      const periodic: Periodic = {
+        id: 'p1',
+        transactionId: '1',
+        cycle: 'monthly',
+        duration: null,
+        createdAt: new Date(),
+        updateAt: new Date(),
+      };
+
+      jest
+        .spyOn(dbService.client.transaction, 'findUnique')
+        .mockResolvedValue(transaction);
+
+      const spy = jest
+        .spyOn(dbService.client.periodic, 'create')
+        .mockResolvedValue(periodic);
+
+      const dto: CreatePeriodicTransactionDto = {
+        transactionId: '1',
+        cycle: 'monthly',
+      };
+
+      const result = await transactionService.createPeriodic(dto, 'userId');
+
+      expect(result).toEqual(periodic);
+      expect(spy).toHaveBeenCalledWith({ data: dto });
+    });
+
+    it('should throw NotFoundException when transaction not found', async () => {
+      jest
+        .spyOn(dbService.client.transaction, 'findFirstOrThrow')
+        .mockRejectedValue(
+          new Prisma.PrismaClientKnownRequestError('Transaction not found', {
+            code: 'P2025',
+            clientVersion: '5.0.0',
+          }),
+        );
+
+      const dto: CreatePeriodicTransactionDto = {
+        transactionId: '1',
+        cycle: 'monthly',
+      };
+
+      await expect(
+        transactionService.createPeriodic(dto, 'userId'),
       ).rejects.toThrow(NotFoundException);
     });
   });

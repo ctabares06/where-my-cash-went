@@ -8,7 +8,11 @@ import {
   Delete,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { CreateTransactionDto, UpdateTransactionDto } from './transaction.dto';
+import {
+  CreatePeriodicTransactionDto,
+  CreateTransactionDto,
+  UpdateTransactionDto,
+} from './transaction.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 
 @Controller('transactions')
@@ -22,6 +26,21 @@ export class TransactionController {
   ) {
     return this.transactionService.create(
       createTransactionDto,
+      session.user.id,
+    );
+  }
+
+  @Post([':id', 'periodic'])
+  createPeriodic(
+    @Param('id') id: string,
+    @Body() createPeriodicTransactionDto: CreatePeriodicTransactionDto,
+    @Session() session: UserSession,
+  ) {
+    return this.transactionService.createPeriodic(
+      {
+        ...createPeriodicTransactionDto,
+        transactionId: id,
+      },
       session.user.id,
     );
   }

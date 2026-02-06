@@ -166,6 +166,8 @@ export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[key
 export const PeriodicScalarFieldEnum = {
   id: 'id',
   transactionId: 'transactionId',
+  cycle: 'cycle',
+  duration: 'duration',
   createdAt: 'createdAt',
   updateAt: 'updateAt'
 } as const

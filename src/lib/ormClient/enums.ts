@@ -12,11 +12,12 @@
 export const Cycle_T = {
   daily: 'daily',
   weekly: 'weekly',
+  fortnightly: 'fortnightly',
   monthly: 'monthly',
   quarterly: 'quarterly',
   biannual: 'biannual',
   yearly: 'yearly',
-  customDays: 'customDays'
+  custom: 'custom'
 } as const
 
 export type Cycle_T = (typeof Cycle_T)[keyof typeof Cycle_T]

@@ -20,13 +20,25 @@ export type PeriodicModel = runtime.Types.Result.DefaultSelection<Prisma.$Period
 
 export type AggregatePeriodic = {
   _count: PeriodicCountAggregateOutputType | null
+  _avg: PeriodicAvgAggregateOutputType | null
+  _sum: PeriodicSumAggregateOutputType | null
   _min: PeriodicMinAggregateOutputType | null
   _max: PeriodicMaxAggregateOutputType | null
+}
+
+export type PeriodicAvgAggregateOutputType = {
+  duration: number | null
+}
+
+export type PeriodicSumAggregateOutputType = {
+  duration: number | null
 }
 
 export type PeriodicMinAggregateOutputType = {
   id: string | null
   transactionId: string | null
+  cycle: $Enums.Cycle_T | null
+  duration: number | null
   createdAt: Date | null
   updateAt: Date | null
 }
@@ -34,6 +46,8 @@ export type PeriodicMinAggregateOutputType = {
 export type PeriodicMaxAggregateOutputType = {
   id: string | null
   transactionId: string | null
+  cycle: $Enums.Cycle_T | null
+  duration: number | null
   createdAt: Date | null
   updateAt: Date | null
 }
@@ -41,15 +55,27 @@ export type PeriodicMaxAggregateOutputType = {
 export type PeriodicCountAggregateOutputType = {
   id: number
   transactionId: number
+  cycle: number
+  duration: number
   createdAt: number
   updateAt: number
   _all: number
 }
 
 
+export type PeriodicAvgAggregateInputType = {
+  duration?: true
+}
+
+export type PeriodicSumAggregateInputType = {
+  duration?: true
+}
+
 export type PeriodicMinAggregateInputType = {
   id?: true
   transactionId?: true
+  cycle?: true
+  duration?: true
   createdAt?: true
   updateAt?: true
 }
@@ -57,6 +83,8 @@ export type PeriodicMinAggregateInputType = {
 export type PeriodicMaxAggregateInputType = {
   id?: true
   transactionId?: true
+  cycle?: true
+  duration?: true
   createdAt?: true
   updateAt?: true
 }
@@ -64,6 +92,8 @@ export type PeriodicMaxAggregateInputType = {
 export type PeriodicCountAggregateInputType = {
   id?: true
   transactionId?: true
+  cycle?: true
+  duration?: true
   createdAt?: true
   updateAt?: true
   _all?: true
@@ -107,6 +137,18 @@ export type PeriodicAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: PeriodicAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: PeriodicSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: PeriodicMinAggregateInputType
@@ -137,6 +179,8 @@ export type PeriodicGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: PeriodicCountAggregateInputType | true
+  _avg?: PeriodicAvgAggregateInputType
+  _sum?: PeriodicSumAggregateInputType
   _min?: PeriodicMinAggregateInputType
   _max?: PeriodicMaxAggregateInputType
 }
@@ -144,9 +188,13 @@ export type PeriodicGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type PeriodicGroupByOutputType = {
   id: string
   transactionId: string
+  cycle: $Enums.Cycle_T
+  duration: number | null
   createdAt: Date
   updateAt: Date
   _count: PeriodicCountAggregateOutputType | null
+  _avg: PeriodicAvgAggregateOutputType | null
+  _sum: PeriodicSumAggregateOutputType | null
   _min: PeriodicMinAggregateOutputType | null
   _max: PeriodicMaxAggregateOutputType | null
 }
@@ -172,6 +220,8 @@ export type PeriodicWhereInput = {
   NOT?: Prisma.PeriodicWhereInput | Prisma.PeriodicWhereInput[]
   id?: Prisma.StringFilter<"Periodic"> | string
   transactionId?: Prisma.StringFilter<"Periodic"> | string
+  cycle?: Prisma.EnumCycle_TFilter<"Periodic"> | $Enums.Cycle_T
+  duration?: Prisma.IntNullableFilter<"Periodic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
   updateAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
   transaction?: Prisma.XOR<Prisma.TransactionScalarRelationFilter, Prisma.TransactionWhereInput>
@@ -180,6 +230,8 @@ export type PeriodicWhereInput = {
 export type PeriodicOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  cycle?: Prisma.SortOrder
+  duration?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
   transaction?: Prisma.TransactionOrderByWithRelationInput
@@ -191,6 +243,8 @@ export type PeriodicWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PeriodicWhereInput[]
   NOT?: Prisma.PeriodicWhereInput | Prisma.PeriodicWhereInput[]
   transactionId?: Prisma.StringFilter<"Periodic"> | string
+  cycle?: Prisma.EnumCycle_TFilter<"Periodic"> | $Enums.Cycle_T
+  duration?: Prisma.IntNullableFilter<"Periodic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
   updateAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
   transaction?: Prisma.XOR<Prisma.TransactionScalarRelationFilter, Prisma.TransactionWhereInput>
@@ -199,11 +253,15 @@ export type PeriodicWhereUniqueInput = Prisma.AtLeast<{
 export type PeriodicOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  cycle?: Prisma.SortOrder
+  duration?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
   _count?: Prisma.PeriodicCountOrderByAggregateInput
+  _avg?: Prisma.PeriodicAvgOrderByAggregateInput
   _max?: Prisma.PeriodicMaxOrderByAggregateInput
   _min?: Prisma.PeriodicMinOrderByAggregateInput
+  _sum?: Prisma.PeriodicSumOrderByAggregateInput
 }
 
 export type PeriodicScalarWhereWithAggregatesInput = {
@@ -212,12 +270,16 @@ export type PeriodicScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PeriodicScalarWhereWithAggregatesInput | Prisma.PeriodicScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Periodic"> | string
   transactionId?: Prisma.StringWithAggregatesFilter<"Periodic"> | string
+  cycle?: Prisma.EnumCycle_TWithAggregatesFilter<"Periodic"> | $Enums.Cycle_T
+  duration?: Prisma.IntNullableWithAggregatesFilter<"Periodic"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Periodic"> | Date | string
   updateAt?: Prisma.DateTimeWithAggregatesFilter<"Periodic"> | Date | string
 }
 
 export type PeriodicCreateInput = {
   id?: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
   transaction: Prisma.TransactionCreateNestedOneWithoutPeriodicsInput
@@ -226,12 +288,16 @@ export type PeriodicCreateInput = {
 export type PeriodicUncheckedCreateInput = {
   id?: string
   transactionId: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
 }
 
 export type PeriodicUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   transaction?: Prisma.TransactionUpdateOneRequiredWithoutPeriodicsNestedInput
@@ -240,6 +306,8 @@ export type PeriodicUpdateInput = {
 export type PeriodicUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -247,12 +315,16 @@ export type PeriodicUncheckedUpdateInput = {
 export type PeriodicCreateManyInput = {
   id?: string
   transactionId: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
 }
 
 export type PeriodicUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -260,6 +332,8 @@ export type PeriodicUpdateManyMutationInput = {
 export type PeriodicUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -277,13 +351,21 @@ export type PeriodicOrderByRelationAggregateInput = {
 export type PeriodicCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  cycle?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
+}
+
+export type PeriodicAvgOrderByAggregateInput = {
+  duration?: Prisma.SortOrder
 }
 
 export type PeriodicMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  cycle?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
 }
@@ -291,8 +373,14 @@ export type PeriodicMaxOrderByAggregateInput = {
 export type PeriodicMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   transactionId?: Prisma.SortOrder
+  cycle?: Prisma.SortOrder
+  duration?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updateAt?: Prisma.SortOrder
+}
+
+export type PeriodicSumOrderByAggregateInput = {
+  duration?: Prisma.SortOrder
 }
 
 export type PeriodicCreateNestedManyWithoutTransactionInput = {
@@ -337,14 +425,30 @@ export type PeriodicUncheckedUpdateManyWithoutTransactionNestedInput = {
   deleteMany?: Prisma.PeriodicScalarWhereInput | Prisma.PeriodicScalarWhereInput[]
 }
 
+export type EnumCycle_TFieldUpdateOperationsInput = {
+  set?: $Enums.Cycle_T
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type PeriodicCreateWithoutTransactionInput = {
   id?: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
 }
 
 export type PeriodicUncheckedCreateWithoutTransactionInput = {
   id?: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
 }
@@ -381,30 +485,40 @@ export type PeriodicScalarWhereInput = {
   NOT?: Prisma.PeriodicScalarWhereInput | Prisma.PeriodicScalarWhereInput[]
   id?: Prisma.StringFilter<"Periodic"> | string
   transactionId?: Prisma.StringFilter<"Periodic"> | string
+  cycle?: Prisma.EnumCycle_TFilter<"Periodic"> | $Enums.Cycle_T
+  duration?: Prisma.IntNullableFilter<"Periodic"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
   updateAt?: Prisma.DateTimeFilter<"Periodic"> | Date | string
 }
 
 export type PeriodicCreateManyTransactionInput = {
   id?: string
+  cycle: $Enums.Cycle_T
+  duration?: number | null
   createdAt?: Date | string
   updateAt?: Date | string
 }
 
 export type PeriodicUpdateWithoutTransactionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PeriodicUncheckedUpdateWithoutTransactionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PeriodicUncheckedUpdateManyWithoutTransactionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cycle?: Prisma.EnumCycle_TFieldUpdateOperationsInput | $Enums.Cycle_T
+  duration?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updateAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -414,6 +528,8 @@ export type PeriodicUncheckedUpdateManyWithoutTransactionInput = {
 export type PeriodicSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   transactionId?: boolean
+  cycle?: boolean
+  duration?: boolean
   createdAt?: boolean
   updateAt?: boolean
   transaction?: boolean | Prisma.TransactionDefaultArgs<ExtArgs>
@@ -422,6 +538,8 @@ export type PeriodicSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type PeriodicSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   transactionId?: boolean
+  cycle?: boolean
+  duration?: boolean
   createdAt?: boolean
   updateAt?: boolean
   transaction?: boolean | Prisma.TransactionDefaultArgs<ExtArgs>
@@ -430,6 +548,8 @@ export type PeriodicSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type PeriodicSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   transactionId?: boolean
+  cycle?: boolean
+  duration?: boolean
   createdAt?: boolean
   updateAt?: boolean
   transaction?: boolean | Prisma.TransactionDefaultArgs<ExtArgs>
@@ -438,11 +558,13 @@ export type PeriodicSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type PeriodicSelectScalar = {
   id?: boolean
   transactionId?: boolean
+  cycle?: boolean
+  duration?: boolean
   createdAt?: boolean
   updateAt?: boolean
 }
 
-export type PeriodicOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "transactionId" | "createdAt" | "updateAt", ExtArgs["result"]["periodic"]>
+export type PeriodicOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "transactionId" | "cycle" | "duration" | "createdAt" | "updateAt", ExtArgs["result"]["periodic"]>
 export type PeriodicInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   transaction?: boolean | Prisma.TransactionDefaultArgs<ExtArgs>
 }
@@ -461,6 +583,8 @@ export type $PeriodicPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     transactionId: string
+    cycle: $Enums.Cycle_T
+    duration: number | null
     createdAt: Date
     updateAt: Date
   }, ExtArgs["result"]["periodic"]>
@@ -889,6 +1013,8 @@ export interface Prisma__PeriodicClient<T, Null = never, ExtArgs extends runtime
 export interface PeriodicFieldRefs {
   readonly id: Prisma.FieldRef<"Periodic", 'String'>
   readonly transactionId: Prisma.FieldRef<"Periodic", 'String'>
+  readonly cycle: Prisma.FieldRef<"Periodic", 'Cycle_T'>
+  readonly duration: Prisma.FieldRef<"Periodic", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Periodic", 'DateTime'>
   readonly updateAt: Prisma.FieldRef<"Periodic", 'DateTime'>
 }

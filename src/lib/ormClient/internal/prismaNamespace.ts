@@ -1205,6 +1205,8 @@ export type TransactionScalarFieldEnum = (typeof TransactionScalarFieldEnum)[key
 export const PeriodicScalarFieldEnum = {
   id: 'id',
   transactionId: 'transactionId',
+  cycle: 'cycle',
+  duration: 'duration',
   createdAt: 'createdAt',
   updateAt: 'updateAt'
 } as const
@@ -1321,6 +1323,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Cycle_T'
+ */
+export type EnumCycle_TFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Cycle_T'>
+    
+
+
+/**
+ * Reference to a field of type 'Cycle_T[]'
+ */
+export type ListEnumCycle_TFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Cycle_T[]'>
     
 
 

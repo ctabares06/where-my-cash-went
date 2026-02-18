@@ -1,9 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/mapped-types';
 import {
   IsDate,
   IsEnum,
   IsInt,
   IsOptional,
+  IsUUID,
   Min,
   ValidateIf,
 } from 'class-validator';
@@ -18,12 +19,17 @@ export class CreatePeriodicDto {
   @Min(1)
   duration?: number;
 
+  @IsUUID()
+  transactionId!: string;
+
   @IsOptional()
   @IsDate()
   startDate?: Date;
 }
 
-export class UpdatePeriodicDto extends PartialType(CreatePeriodicDto) {
+export class UpdatePeriodicDto extends PartialType(
+  OmitType(CreatePeriodicDto, ['transactionId']),
+) {
   @IsOptional()
   @IsEnum(Cycle_T)
   cycle?: Cycle_T;

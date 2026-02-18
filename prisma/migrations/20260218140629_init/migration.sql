@@ -95,6 +95,7 @@ CREATE TABLE "periodic" (
     "transactionId" TEXT NOT NULL,
     "cycle" "Cycle_T" NOT NULL,
     "duration" INTEGER,
+    "nextOcurrence" DATE NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updateAt" TIMESTAMP(3) NOT NULL,
 
@@ -137,6 +138,9 @@ CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 
 -- CreateIndex
 CREATE INDEX "transaction_userId_idx" ON "transaction"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "periodic_transactionId_key" ON "periodic"("transactionId");
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

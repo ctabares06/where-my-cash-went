@@ -34,6 +34,10 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return this.client.user;
   }
 
+  tagsOnTransactions() {
+    return this.client.tagsOnTransactions;
+  }
+
   async onModuleInit() {
     await this.client.$connect();
   }

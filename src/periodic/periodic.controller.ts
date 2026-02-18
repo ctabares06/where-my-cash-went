@@ -1,18 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { PeriodicService as PeriodicService } from './periodic.service';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { CreatePeriodicDto, UpdatePeriodicDto } from './periodic.dto';
 
-@Controller('generic')
+@Controller('periodics')
 export class GenericController {
   constructor(private genericService: PeriodicService) {}
 
   @Post()
-  create(@Body() data: CreatePeriodicDto, @Session() session: UserSession) {
-    return this.genericService.create(data, session.user.id);
+  create(@Body() data: CreatePeriodicDto) {
+    return this.genericService.create(data);
   }
 
-  @Post(':id')
+  @Put(':id')
   update(
     @Body() data: UpdatePeriodicDto,
     @Param('id') periodicId: string,

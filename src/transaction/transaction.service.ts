@@ -13,9 +13,13 @@ export class TransactionService {
   ) {
     try {
       if (Array.isArray(data)) {
-        const transactionPromises = data.map((transaction) =>
-          this.domain.create(transaction, userId),
-        );
+        const transactionPromises = data.map((transaction) => {
+          if (transaction.categoryId) {
+            transaction.transactionType = undefined;
+          }
+
+          return this.domain.create(transaction, userId);
+        });
 
         const results = await Promise.all(transactionPromises);
 
@@ -23,7 +27,7 @@ export class TransactionService {
       }
 
       if (data.categoryId) {
-        delete data.transactionType;
+        data.transactionType = undefined;
       }
 
       return this.domain.create(data, userId);
@@ -44,7 +48,22 @@ export class TransactionService {
   }
 
   async update(id: string, data: UpdateTransactionDto, userId: string) {
-    return this.domain.update(data, id, userId);
+    const currentTransaction = await this.domain.getOne(id, userId);
+    const parsedData = { ...data };
+
+    if (parsedData.categoryId || currentTransaction.categoryId) {
+      parsedData.transactionType = undefined;
+    }
+
+    if (!parsedData.categoryId && currentTransaction.categoryId) {
+      parsedData.categoryId = currentTransaction.categoryId;
+    }
+
+    if (data.tags) {
+      await this.domain.deleteTransactionTags(id);
+    }
+
+    return this.domain.update(parsedData, id, userId);
   }
 
   async remove(id: string, userId: string) {

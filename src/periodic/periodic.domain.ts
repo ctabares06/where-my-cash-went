@@ -7,12 +7,13 @@ import { CreatePeriodicDto, UpdatePeriodicDto } from './periodic.dto';
 export class PeriodicDomain {
   constructor(private dbService: DatabaseService) {}
 
-  create(data: CreatePeriodicDto, transactionId: string, next: Date) {
+  create(data: CreatePeriodicDto, next: Date) {
     const createPeriodic: Prisma.PeriodicCreateInput = {
-      ...data,
+      cycle: data.cycle,
+      duration: data.duration,
       transaction: {
         connect: {
-          id: transactionId,
+          id: data.transactionId,
         },
       },
       nextOcurrence: next,

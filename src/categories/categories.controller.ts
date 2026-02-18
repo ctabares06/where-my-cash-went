@@ -8,7 +8,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { CreateCategoryDto } from './categories.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './categories.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { CategoriesService } from './categories.service';
 
@@ -57,7 +57,7 @@ export class CategoriesController {
   @Put(':id')
   async updateCategory(
     @Param('id') categoryId: string,
-    @Body() body: Partial<CreateCategoryDto>,
+    @Body() body: UpdateCategoryDto,
     @Session() session: UserSession,
   ) {
     const category = await this.categoryService.updateCategory(

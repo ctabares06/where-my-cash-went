@@ -4,9 +4,9 @@ import {
   Post,
   Body,
   Param,
-  Patch,
   Delete,
   Query,
+  Put,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto, UpdateTransactionDto } from './transaction.dto';
@@ -41,7 +41,7 @@ export class TransactionController {
     return this.transactionService.findOne(id, session.user.id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id') id: string,
     @Body() updateTransactionDto: UpdateTransactionDto,

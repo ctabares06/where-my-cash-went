@@ -13,14 +13,14 @@ export class PeriodicService {
     private transactionDomain: TransactionDomain,
   ) {}
 
-  create(data: CreatePeriodicDto, transactionId: string) {
+  create(data: CreatePeriodicDto) {
     const nextOcurrence = this.calculateNextOccurrence(
       data.cycle,
       data.startDate || new Date(Date.now()),
       data.duration || 0,
     );
 
-    return this.periodicDomain.create(data, transactionId, nextOcurrence);
+    return this.periodicDomain.create(data, nextOcurrence);
   }
 
   async update(data: UpdatePeriodicDto, periodicId: string, userId: string) {

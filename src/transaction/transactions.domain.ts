@@ -8,10 +8,6 @@ export class TransactionDomain {
   constructor(private dbService: DatabaseService) {}
 
   create(data: CreateTransactionDto, userId: string) {
-    if (data.categoryId) {
-      delete data.transactionType;
-    }
-
     const createPayload: Prisma.TransactionCreateInput = {
       quantity: data.quantity,
       description: data.description,
@@ -78,10 +74,6 @@ export class TransactionDomain {
   }
 
   async update(data: UpdateTransactionDto, id: string, userId: string) {
-    if (data.categoryId) {
-      delete data.transactionType;
-    }
-
     const updatePayload: Prisma.TransactionUpdateInput = {
       quantity: data.quantity,
       description: data.description,
@@ -90,40 +82,9 @@ export class TransactionDomain {
           id: data.categoryId,
         },
       },
-      user: {
-        connect: {
-          id: userId,
-        },
-      },
     };
 
-    const currentTags = await this.dbService.transaction().findFirst({
-      where: {
-        id,
-        userId,
-      },
-      select: {
-        tagsOnTransactions: {
-          select: {
-            tagId: true,
-          },
-        },
-      },
-    });
-
     if (data.tags && data.tags.length) {
-      if (currentTags) {
-        updatePayload.tagsOnTransactions = {
-          deleteMany: currentTags.tagsOnTransactions.map((tag) => ({
-            tagId: tag.tagId,
-          })),
-          createMany: {
-            data: data.tags.map((tag) => ({
-              tagId: tag,
-            })),
-          },
-        };
-      }
       updatePayload.tagsOnTransactions = {
         createMany: {
           data: data.tags.map((tag) => ({
@@ -139,6 +100,32 @@ export class TransactionDomain {
         userId,
       },
       data: updatePayload,
+      include: {
+        category: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
+        tagsOnTransactions: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  deleteTransactionTags(transactionId: string) {
+    return this.dbService.tagsOnTransactions().deleteMany({
+      where: {
+        transactionId,
+      },
     });
   }
 

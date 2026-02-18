@@ -1,92 +1,36 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import { CreateAndUpdateTagDto } from './tags.dto';
-import { Prisma } from '../lib/ormClient/client';
+import { Injectable } from '@nestjs/common';
+import { CreateTagDto, UpdateTagDto } from './tags.dto';
+import { TagsDomain } from './tags.domain';
 
 @Injectable()
 export class TagsService {
-  constructor(private db: DatabaseService) {}
+  constructor(private tagsDomain: TagsDomain) {}
 
-  async createTag(
-    body: CreateAndUpdateTagDto | CreateAndUpdateTagDto[],
-    userId: string,
-  ) {
-    try {
-      if (Array.isArray(body)) {
-        const createdTags = await this.db.client.tags.createMany({
-          data: body.map((t) => ({ name: t.name, userId })),
-        });
+  async createTag(body: CreateTagDto | CreateTagDto[], userId: string) {
+    if (Array.isArray(body)) {
+      const createTagsPromise = body.map((batch) =>
+        this.tagsDomain.create(batch, userId),
+      );
 
-        // return created items
-        return await this.db.client.tags.findMany({
-          where: { userId },
-          skip: 0,
-          take: createdTags.count,
-          orderBy: { createdAt: 'desc' },
-        });
-      }
-
-      const tag = await this.db.client.tags.create({
-        data: { name: body.name, userId },
-      });
-
-      return tag;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException('Invalid data provided');
-      }
-      throw new InternalServerErrorException('Tag creation failed');
+      return await Promise.all(createTagsPromise);
     }
+
+    return this.tagsDomain.create(body, userId);
   }
 
-  async getTagsByUser(userId: string, page?: number, limit?: number) {
-    return await this.db.client.tags.findMany({
-      where: { userId },
-      skip: page && limit ? (page - 1) * limit : 0,
-      take: limit || 20,
-    });
+  getTagsByUser(userId: string, page: number, limit: number) {
+    return this.tagsDomain.getMany(userId, limit, page);
   }
 
-  async getTagById(tagId: string, userId: string) {
-    const tag = await this.db.client.tags.findFirst({
-      where: { id: tagId, userId },
-    });
-    if (!tag) throw new NotFoundException('Tag not found');
-    return tag;
+  getTagById(tagId: string, userId: string) {
+    return this.tagsDomain.getOne(tagId, userId);
   }
 
-  async updateTag(
-    tagId: string,
-    userId: string,
-    body: Partial<CreateAndUpdateTagDto>,
-  ) {
-    try {
-      const tag = await this.db.client.tags.update({
-        where: { id: tagId, userId },
-        data: body,
-      });
-      if (!tag) throw new NotFoundException('Tag not found');
-
-      return tag;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException('Invalid data provided');
-      }
-      throw new InternalServerErrorException('Failed to update tag');
-    }
+  async updateTag(body: UpdateTagDto, tagId: string, userId: string) {
+    return this.tagsDomain.update(body, tagId, userId);
   }
 
   async deleteTag(tagId: string, userId: string) {
-    const tag = await this.db.client.tags.findFirst({
-      where: { id: tagId, userId },
-    });
-    if (!tag) throw new NotFoundException('Tag not found');
-
-    return await this.db.client.tags.delete({ where: { id: tag.id } });
+    return this.tagsDomain.delete(tagId, userId);
   }
 }

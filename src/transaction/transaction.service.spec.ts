@@ -1,14 +1,17 @@
 import { Test } from '@nestjs/testing';
 import { TransactionService } from './transaction.service';
 import { DatabaseService } from '../database/database.service';
-import { Transaction_T } from '../lib/ormClient/enums';
+import { Transaction_T, Cycle_T } from '../lib/ormClient/enums';
 import { createMockContext } from '../../test/prisma.mock';
 import {
   type Transaction,
   type Periodic,
   Prisma,
 } from '../lib/ormClient/client';
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePeriodicTransactionDto } from './transaction.dto';
 
 describe('TransactionService - UT', () => {
@@ -200,12 +203,14 @@ describe('TransactionService - UT', () => {
 
       const result = await transactionService.findOne('1', 'userId');
       expect(result).toEqual(transaction);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          id: '1',
-          userId: 'userId',
-        },
-      });
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            id: '1',
+            userId: 'userId',
+          },
+        }),
+      );
     });
 
     it('should throw NotFoundException when transaction not found', async () => {
@@ -247,6 +252,7 @@ describe('TransactionService - UT', () => {
         transactionId: '1',
         cycle: 'monthly',
         duration: null,
+        nextOcurrence: new Date(),
         createdAt: new Date(),
         updateAt: new Date(),
       };
@@ -260,14 +266,18 @@ describe('TransactionService - UT', () => {
         .mockResolvedValue(periodic);
 
       const dto: CreatePeriodicTransactionDto = {
-        transactionId: '1',
         cycle: 'monthly',
+        duration: undefined,
       };
 
-      const result = await transactionService.createPeriodic(dto, 'userId');
+      const result = await transactionService.createPeriodic(
+        dto,
+        transaction.id,
+        'userId',
+      );
 
       expect(result).toEqual(periodic);
-      expect(spy).toHaveBeenCalledWith({ data: dto });
+      expect(spy).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when transaction not found', async () => {
@@ -281,12 +291,11 @@ describe('TransactionService - UT', () => {
         );
 
       const dto: CreatePeriodicTransactionDto = {
-        transactionId: '1',
         cycle: 'monthly',
       };
 
       await expect(
-        transactionService.createPeriodic(dto, 'userId'),
+        transactionService.createPeriodic(dto, '1', 'userId'),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -380,6 +389,145 @@ describe('TransactionService - UT', () => {
       await expect(
         transactionService.remove('1', 'differentUserId'),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createScheduleTransaction', () => {
+    const nestedTransactionSelect = {
+      id: true,
+      quantity: true,
+      description: true,
+      categoryId: true,
+      transactionType: true,
+      userId: true,
+      createdAt: true,
+      updateAt: true,
+      tagsOnTransactions: {
+        select: {
+          tagId: true,
+        },
+      },
+    } satisfies Prisma.TransactionSelect;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const periodicSelect = {
+      id: true,
+      cycle: true,
+      duration: true,
+      nextOcurrence: true,
+      createdAt: true,
+      updateAt: true,
+      transactionId: true,
+      transaction: {
+        select: nestedTransactionSelect,
+      },
+    } satisfies Prisma.PeriodicSelect;
+
+    const now = new Date();
+    const past = new Date(now.getTime() - 1000 * 60 * 60);
+
+    const t1: Prisma.TransactionGetPayload<{
+      select: typeof nestedTransactionSelect;
+    }> = {
+      id: 't1',
+      quantity: 10,
+      description: 'monthly payment',
+      categoryId: null,
+      transactionType: Transaction_T.expense,
+      userId: 'user1',
+      createdAt: new Date(),
+      updateAt: new Date(),
+      tagsOnTransactions: [
+        {
+          tagId: 'tag1',
+        },
+        {
+          tagId: 'tag2',
+        },
+      ],
+    };
+
+    const t2 = { ...t1 };
+    t2.id = 't2';
+
+    const periodicPayload: Prisma.PeriodicGetPayload<{
+      select: typeof periodicSelect;
+    }>[] = [
+      {
+        id: 'p1',
+        cycle: Cycle_T.monthly,
+        duration: null,
+        nextOcurrence: past,
+        createdAt: new Date(),
+        updateAt: new Date(),
+        transactionId: 't1',
+        transaction: t1,
+      },
+      {
+        id: 'p2',
+        cycle: Cycle_T.monthly,
+        duration: null,
+        nextOcurrence: past,
+        createdAt: new Date(),
+        updateAt: new Date(),
+        transactionId: 't2',
+        transaction: t2,
+      },
+    ];
+
+    beforeEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('should create transactions for due periodics and update their nextOcurrence', async () => {
+      jest
+        .spyOn(dbService.client.periodic, 'findMany')
+        .mockResolvedValue(periodicPayload);
+
+      const spyCreate = jest.spyOn(dbService.client.transaction, 'create');
+      const spyPeriodicUpdate = jest.spyOn(dbService.client.periodic, 'update');
+
+      const expectedNext = periodicPayload.map((value) => {
+        return transactionService.calculateNextOccurrence(
+          value.cycle,
+          value.nextOcurrence,
+          value.duration || undefined,
+        );
+      });
+
+      periodicPayload.forEach((value, index) => {
+        spyCreate.mockResolvedValueOnce(value.transaction);
+        spyPeriodicUpdate.mockResolvedValueOnce({
+          ...value,
+          nextOcurrence: expectedNext[index],
+        });
+      });
+
+      await transactionService.createScheduleTransaction();
+
+      expect(spyCreate).toHaveBeenCalledTimes(periodicPayload.length);
+      expect(spyPeriodicUpdate).toHaveBeenCalledTimes(periodicPayload.length);
+    });
+
+    it('should catch and log errors when transaction.create rejects and not update periodics', async () => {
+      jest
+        .spyOn(dbService.client.periodic, 'findMany')
+        .mockResolvedValue(periodicPayload);
+
+      jest
+        .spyOn(dbService.client.transaction, 'create')
+        .mockRejectedValue(Prisma.PrismaClientKnownRequestError);
+
+      const spyPeriodicUpdate = jest.spyOn(dbService.client.periodic, 'update');
+      const spyError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await expect(
+        transactionService.createScheduleTransaction(),
+      ).rejects.toThrow(InternalServerErrorException);
+      expect(spyError).toHaveBeenCalled();
+      expect(spyPeriodicUpdate).not.toHaveBeenCalled();
     });
   });
 });

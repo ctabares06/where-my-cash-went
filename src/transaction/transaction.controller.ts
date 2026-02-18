@@ -6,13 +6,10 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import {
-  CreatePeriodicTransactionDto,
-  CreateTransactionDto,
-  UpdateTransactionDto,
-} from './transaction.dto';
+import { CreateTransactionDto, UpdateTransactionDto } from './transaction.dto';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 
 @Controller('transactions')
@@ -30,24 +27,13 @@ export class TransactionController {
     );
   }
 
-  @Post([':id', 'periodic'])
-  createPeriodic(
-    @Param('id') id: string,
-    @Body() createPeriodicTransactionDto: CreatePeriodicTransactionDto,
-    @Session() session: UserSession,
-  ) {
-    return this.transactionService.createPeriodic(
-      {
-        ...createPeriodicTransactionDto,
-        transactionId: id,
-      },
-      session.user.id,
-    );
-  }
-
   @Get()
-  findAll(@Session() session: UserSession) {
-    return this.transactionService.findAll(session.user.id);
+  findAll(
+    @Session() session: UserSession,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+  ) {
+    return this.transactionService.findAll(session.user.id, limit, page);
   }
 
   @Get(':id')

@@ -131,10 +131,11 @@ model Transaction {
 
 model Periodic {
   id            String      @id @default(uuid())
-  transactionId String
+  transactionId String      @unique
   cycle         Cycle_T
   duration      Int?
   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  nextOcurrence DateTime    @db.Date
   createdAt     DateTime    @default(now())
   updateAt      DateTime    @updatedAt
 

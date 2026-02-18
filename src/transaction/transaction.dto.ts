@@ -6,7 +6,7 @@ import {
   IsUUID,
   ValidateIf,
 } from 'class-validator';
-import { Cycle_T, Transaction_T } from '../lib/ormClient/enums';
+import { Transaction_T } from '../lib/ormClient/enums';
 import { Transaction } from 'src/lib/ormClient/client';
 import { PartialType } from '@nestjs/mapped-types';
 
@@ -36,23 +36,6 @@ export class CreateTransactionDto implements Partial<Transaction> {
     return true;
   })
   transactionType?: Transaction_T;
-}
-
-export class CreatePeriodicTransactionDto {
-  @IsUUID(4)
-  transactionId!: string;
-
-  @IsEnum(Cycle_T)
-  cycle!: Cycle_T;
-
-  @ValidateIf((object: CreatePeriodicTransactionDto) => {
-    if (object.cycle === Cycle_T.custom) {
-      return false;
-    }
-    return true;
-  })
-  @IsInt()
-  duration?: number;
 }
 
 export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {

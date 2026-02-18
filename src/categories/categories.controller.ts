@@ -61,9 +61,9 @@ export class CategoriesController {
     @Session() session: UserSession,
   ) {
     const category = await this.categoryService.updateCategory(
+      body,
       categoryId,
       session.user.id,
-      body,
     );
     return category;
   }

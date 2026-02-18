@@ -5,7 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  readonly client: PrismaClient;
+  private readonly client: PrismaClient;
   constructor(configVars: ConfigService) {
     const adapter = new PrismaPg({
       connectionString: configVars.getOrThrow('DATABASE_URL'),
@@ -15,11 +15,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   }
 
   category() {
-    return this.client.category;
+    return this.client.category satisfies typeof this.client.category;
   }
 
   transaction() {
     return this.client.transaction;
+  }
+
+  periodic() {
+    return this.client.periodic;
   }
 
   tags() {

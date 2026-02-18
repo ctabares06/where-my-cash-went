@@ -1,120 +1,43 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import { CreateCategoryDto } from './categories.dto';
-import { Prisma } from '../lib/ormClient/client';
+import { Injectable } from '@nestjs/common';
+import { CreateCategoryDto, UpdateCategoryDto } from './categories.dto';
+import { CategoriesDomain } from './categories.domain';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private db: DatabaseService) {}
+  constructor(private categoryDomain: CategoriesDomain) {}
 
-  async createCategory(
+  createCategory(
     body: CreateCategoryDto | CreateCategoryDto[],
     userId: string,
   ) {
-    try {
-      if (Array.isArray(body)) {
-        const categories = await this.db.client.category.createMany({
-          data: body.map((category) => ({
-            name: category.name,
-            unicode: category.unicode,
-            transactionType: category.transactionType,
-            userId: userId,
-          })),
-        });
-        return await this.db.client.category.findMany({
-          where: {
-            userId: userId,
-          },
-          skip: 0,
-          take: categories.count,
-          orderBy: {
-            createdAt: 'desc',
-          },
-        });
-      }
+    if (Array.isArray(body)) {
+      const createCategoriesPromises = body.map((batch) =>
+        this.categoryDomain.create(batch, userId),
+      );
 
-      const category = await this.db.client.category.create({
-        data: {
-          name: body.name,
-          unicode: body.unicode,
-          transactionType: body.transactionType,
-          userId: userId,
-        },
-      });
-
-      return category;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new BadRequestException('Invalid data provided');
-      }
-
-      throw new InternalServerErrorException('Category creation failed');
+      return Promise.all(createCategoriesPromises);
     }
+
+    return this.categoryDomain.create(body, userId);
   }
 
-  async getCategoriesByUser(userId: string, page?: number, limit?: number) {
-    const categories = await this.db.client.category.findMany({
-      where: {
-        userId: userId,
-      },
-      skip: page && limit ? (page - 1) * limit : 0,
-      take: limit || undefined,
-    });
-    return categories;
+  async getCategoriesByUser(userId: string, page: number, limit: number) {
+    return this.categoryDomain.getMany(userId, limit, page);
   }
 
   async getCategoryById(categoryId: string, userId: string) {
-    const category = await this.db.client.category.findFirst({
-      where: { id: categoryId, userId: userId },
-    });
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-
-    return category;
+    return this.categoryDomain.getOne(categoryId, userId);
   }
 
   async updateCategory(
+    body: UpdateCategoryDto,
     categoryId: string,
     userId: string,
-    body: Partial<CreateCategoryDto>,
   ) {
-    const category = await this.db.client.category.findFirst({
-      where: { id: categoryId, userId: userId },
-    });
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-
-    const updatedCategory = await this.db.client.category.update({
-      where: {
-        id: category.id,
-      },
-      data: body,
-    });
-    return updatedCategory;
+    return this.categoryDomain.update(body, categoryId, userId);
   }
 
   async deleteCategory(categoryId: string, userId: string) {
-    const category = await this.db.client.category.findFirst({
-      where: { id: categoryId, userId: userId },
-    });
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-
-    return await this.db.client.category.delete({
-      where: {
-        id: category.id,
-      },
-    });
+    return this.categoryDomain.delete(categoryId, userId);
   }
 }

@@ -1207,6 +1207,7 @@ export const PeriodicScalarFieldEnum = {
   transactionId: 'transactionId',
   cycle: 'cycle',
   duration: 'duration',
+  nextOcurrence: 'nextOcurrence',
   createdAt: 'createdAt',
   updateAt: 'updateAt'
 } as const

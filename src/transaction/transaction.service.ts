@@ -30,7 +30,7 @@ export class TransactionService {
         data.transactionType = undefined;
       }
 
-      return this.domain.create(data, userId);
+      return await this.domain.create(data, userId);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new InternalServerErrorException(error.message);
@@ -49,21 +49,21 @@ export class TransactionService {
 
   async update(id: string, data: UpdateTransactionDto, userId: string) {
     const currentTransaction = await this.domain.getOne(id, userId);
-    const parsedData = { ...data };
+    const updateObj = { ...data };
 
-    if (parsedData.categoryId || currentTransaction.categoryId) {
-      parsedData.transactionType = undefined;
+    if (updateObj.categoryId || currentTransaction.categoryId) {
+      updateObj.transactionType = undefined;
     }
 
-    if (!parsedData.categoryId && currentTransaction.categoryId) {
-      parsedData.categoryId = currentTransaction.categoryId;
+    if (!updateObj.categoryId && currentTransaction.categoryId) {
+      updateObj.categoryId = currentTransaction.categoryId;
     }
 
     if (data.tags) {
       await this.domain.deleteTransactionTags(id);
     }
 
-    return this.domain.update(parsedData, id, userId);
+    return this.domain.update(updateObj, id, userId);
   }
 
   async remove(id: string, userId: string) {

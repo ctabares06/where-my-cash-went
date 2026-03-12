@@ -3,12 +3,43 @@ import { DatabaseService } from 'src/database/database.service';
 import { CreateTransactionDto, UpdateTransactionDto } from './transaction.dto';
 import { Prisma } from '../lib/ormClient/client';
 
+export type CreateTransactionDomain = Prisma.TransactionCreateInput;
+export type UpdateTransactionDomain = Prisma.TransactionUpdateInput;
+
+const createAndUpdateTransaction = {
+  category: {
+    select: {
+      name: true,
+      id: true,
+    },
+  },
+  tagsOnTransactions: {
+    select: {
+      tag: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.TransactionSelect;
+
+export type CreateAndUpdateSelectPayload = Prisma.TransactionGetPayload<{
+  include: typeof createAndUpdateTransaction;
+}>;
+
+export type GetOneTransactionSelectPayload = Prisma.TransactionGetPayload<{
+  select: {};
+  include: {};
+}>;
+
 @Injectable()
 export class TransactionDomain {
   constructor(private dbService: DatabaseService) {}
 
   create(data: CreateTransactionDto, userId: string) {
-    const createPayload: Prisma.TransactionCreateInput = {
+    const createPayload: CreateTransactionDomain = {
       quantity: data.quantity,
       description: data.description,
       category: {
@@ -33,24 +64,7 @@ export class TransactionDomain {
 
     return this.dbService.transaction().create({
       data: createPayload,
-      include: {
-        category: {
-          select: {
-            name: true,
-            id: true,
-          },
-        },
-        tagsOnTransactions: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
+      include: createAndUpdateTransaction,
     });
   }
 
@@ -74,7 +88,7 @@ export class TransactionDomain {
   }
 
   async update(data: UpdateTransactionDto, id: string, userId: string) {
-    const updatePayload: Prisma.TransactionUpdateInput = {
+    const updatePayload: UpdateTransactionDomain = {
       quantity: data.quantity,
       description: data.description,
       category: {
@@ -100,24 +114,7 @@ export class TransactionDomain {
         userId,
       },
       data: updatePayload,
-      include: {
-        category: {
-          select: {
-            name: true,
-            id: true,
-          },
-        },
-        tagsOnTransactions: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
+      include: createAndUpdateTransaction,
     });
   }
 

@@ -3,12 +3,30 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '../lib/ormClient/client';
 import { CreateCategoryDto, UpdateCategoryDto } from './categories.dto';
 
+export type CreateCategoryDomain = Prisma.CategoryCreateInput;
+export type UpdateCategoryDomain = Prisma.CategoryUpdateInput;
+
+// selects used for read operations
+const categorySelect = {
+  id: true,
+  name: true,
+  unicode: true,
+  transactionType: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.CategorySelect;
+
+export type CategorySelectPayload = Prisma.CategoryGetPayload<{
+  select: typeof categorySelect;
+}>;
+
 @Injectable()
 export class CategoriesDomain {
   constructor(private dbService: DatabaseService) {}
 
   create(data: CreateCategoryDto, userId: string) {
-    const tagsInput: Prisma.CategoryCreateInput = {
+    const tagsInput: CreateCategoryDomain = {
       ...data,
       user: {
         connect: {
@@ -28,6 +46,7 @@ export class CategoriesDomain {
         id,
         userId,
       },
+      select: categorySelect,
     });
   }
 
@@ -38,11 +57,12 @@ export class CategoriesDomain {
       },
       take: limit,
       skip: page,
+      select: categorySelect,
     });
   }
 
   async update(data: UpdateCategoryDto, tagId: string, userId: string) {
-    const categoryInput: Prisma.CategoryUpdateInput = {
+    const categoryInput: UpdateCategoryDomain = {
       ...data,
     };
 

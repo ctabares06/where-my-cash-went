@@ -1,20 +1,15 @@
 {
-  "moduleFileExtensions": [
-    "js",
-    "json",
-    "ts"
-  ],
+  "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "../src",
   "testRegex": ".*\\.spec\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "collectCoverageFrom": [
-    "**/*.(t|j)s"
-  ],
+  "collectCoverageFrom": ["**/*.(t|j)s"],
   "coverageDirectory": "../coverage",
   "testEnvironment": "node",
   "moduleNameMapper": {
-    "@thallesp/nestjs-better-auth": "<rootDir>/../test/mocks/better-auth.mock.ts"
+    "@thallesp/nestjs-better-auth": "<rootDir>/../test/mocks/better-auth.mock.ts",
+    "src/(.*)": "<rootDir>/$1"
   }
 }

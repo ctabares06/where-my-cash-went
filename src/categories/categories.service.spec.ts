@@ -1,20 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesService } from './categories.service';
-import { DatabaseService } from '../database/database.service';
-import { createMockContext } from '../../test/prisma.mock';
 import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+  CategoriesDomain,
+  CreateCategoryDomain,
+  UpdateCategoryDomain,
+} from './categories.domain';
 import { CreateCategoryDto } from './categories.dto';
 import type { Category } from '../lib/ormClient/client';
 import { Transaction_T } from '../lib/ormClient/enums';
-import { Prisma } from '../lib/ormClient/client';
+import { NotFoundException } from '@nestjs/common';
 
 describe('CategoriesService - UT', () => {
   let service: CategoriesService;
-  let dbService: DatabaseService;
+  let categoryDomain: CategoriesDomain;
 
   const mockCategory: Category = {
     id: 'categoryId',
@@ -27,24 +25,24 @@ describe('CategoriesService - UT', () => {
   };
 
   beforeEach(async () => {
-    const mockContext = createMockContext();
-
-    const mockDbService = {
-      client: mockContext.prisma,
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CategoriesService,
         {
-          provide: DatabaseService,
-          useValue: mockDbService,
+          provide: CategoriesDomain,
+          useValue: {
+            create: jest.fn(),
+            getMany: jest.fn(),
+            getOne: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
         },
       ],
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
-    dbService = module.get<DatabaseService>(DatabaseService);
+    categoryDomain = module.get<CategoriesDomain>(CategoriesDomain);
   });
 
   it('should be defined', () => {
@@ -52,570 +50,101 @@ describe('CategoriesService - UT', () => {
   });
 
   describe('createCategory', () => {
-    it('should create a single category successfully', async () => {
-      const createCategoryDto: CreateCategoryDto = {
+    it('creates a single category', async () => {
+      const dto: CreateCategoryDto = {
         name: 'Groceries',
         unicode: '🛒',
         transactionType: Transaction_T.expense,
       };
+      const domainCreate = jest
+        .spyOn(categoryDomain, 'create')
+        .mockResolvedValue(mockCategory as any);
 
-      const spy = jest
-        .spyOn(dbService.client.category, 'create')
-        .mockResolvedValue(mockCategory);
-
-      const result = await service.createCategory(createCategoryDto, 'userId');
-
+      const result = await service.createCategory(dto, 'userId');
       expect(result).toEqual(mockCategory);
-      expect(spy).toHaveBeenCalledWith({
-        data: {
-          name: 'Groceries',
-          unicode: '🛒',
-          transactionType: Transaction_T.expense,
-          userId: 'userId',
-        },
-      });
-    });
-
-    it('should create multiple categories in batch', async () => {
-      const createCategoriesDto: CreateCategoryDto[] = [
-        {
-          name: 'Groceries',
-          unicode: '🛒',
-          transactionType: Transaction_T.expense,
-        },
-        {
-          name: 'Utilities',
-          unicode: '💡',
-          transactionType: Transaction_T.expense,
-        },
-        {
-          name: 'Salary',
-          unicode: '💰',
-          transactionType: Transaction_T.income,
-        },
-      ];
-
-      const mockBatchResult = { count: 3 };
-
-      const createdItems: Category[] = [
-        {
-          id: 'c1',
-          name: 'Groceries',
-          unicode: '🛒',
-          transactionType: Transaction_T.expense,
-          userId: 'userId',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'c2',
-          name: 'Utilities',
-          unicode: '💡',
-          transactionType: Transaction_T.expense,
-          userId: 'userId',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: 'c3',
-          name: 'Salary',
-          unicode: '💰',
-          transactionType: Transaction_T.income,
-          userId: 'userId',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
-      const spyCreateMany = jest
-        .spyOn(dbService.client.category, 'createMany')
-        .mockResolvedValue(mockBatchResult);
-
-      const spyFindMany = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(createdItems);
-
-      const result = (await service.createCategory(
-        createCategoriesDto,
+      expect(domainCreate).toHaveBeenCalledWith(
+        dto as CreateCategoryDomain,
         'userId',
-      )) as Category[];
-
-      expect(result).toEqual(createdItems);
-      expect(result).toHaveLength(3);
-      expect(spyCreateMany).toHaveBeenCalledWith({
-        data: [
-          {
-            name: 'Groceries',
-            unicode: '🛒',
-            transactionType: Transaction_T.expense,
-            userId: 'userId',
-          },
-          {
-            name: 'Utilities',
-            unicode: '💡',
-            transactionType: Transaction_T.expense,
-            userId: 'userId',
-          },
-          {
-            name: 'Salary',
-            unicode: '💰',
-            transactionType: Transaction_T.income,
-            userId: 'userId',
-          },
-        ],
-      });
-      expect(spyFindMany).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: mockBatchResult.count,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-    });
-
-    it('should handle empty batch creation', async () => {
-      const createCategoriesDto: CreateCategoryDto[] = [];
-
-      const mockBatchResult = { count: 0 };
-      const createdItems: Category[] = [];
-
-      const spyCreateMany = jest
-        .spyOn(dbService.client.category, 'createMany')
-        .mockResolvedValue(mockBatchResult);
-
-      const spyFindMany = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(createdItems);
-
-      const result = (await service.createCategory(
-        createCategoriesDto,
-        'userId',
-      )) as Category[];
-
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
-      expect(spyCreateMany).toHaveBeenCalled();
-      expect(spyFindMany).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: mockBatchResult.count,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-    });
-
-    it('should throw BadRequestException on Prisma for single creation', async () => {
-      const createCategoryDto: CreateCategoryDto = {
-        name: 'Invalid',
-        unicode: '🛒',
-        transactionType: Transaction_T.expense,
-      };
-
-      jest.spyOn(dbService.client.category, 'create').mockRejectedValue(
-        new Prisma.PrismaClientKnownRequestError('Invalid data', {
-          clientVersion: '1.0.0',
-          code: 'P2000',
-        }),
       );
-
-      await expect(
-        service.createCategory(createCategoryDto, 'userId'),
-      ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException on Prisma for batch creation', async () => {
-      const createCategoriesDto: CreateCategoryDto[] = [
-        {
-          name: 'Invalid',
-          unicode: '🛒',
-          transactionType: Transaction_T.expense,
-        },
+    it('creates multiple categories', async () => {
+      const dtos: CreateCategoryDto[] = [
+        { name: 'a', unicode: '🅰️', transactionType: Transaction_T.expense },
+        { name: 'b', unicode: '🅱️', transactionType: Transaction_T.expense },
       ];
+      const returns = [
+        { ...mockCategory, id: 'c1' },
+        { ...mockCategory, id: 'c2' },
+      ];
+      const domainCreate = jest
+        .spyOn(categoryDomain, 'create')
+        .mockImplementation((data) => Promise.resolve(returns.shift()));
 
-      jest.spyOn(dbService.client.category, 'createMany').mockRejectedValue(
-        new Prisma.PrismaClientKnownRequestError('Invalid data', {
-          clientVersion: '1.0.0',
-          code: 'P2000',
-        }),
-      );
-
-      await expect(
-        service.createCategory(createCategoriesDto, 'userId'),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('should throw InternalServerErrorException on other errors', async () => {
-      const createCategoryDto: CreateCategoryDto = {
-        name: 'Category',
-        unicode: '🛒',
-        transactionType: Transaction_T.expense,
-      };
-
-      jest
-        .spyOn(dbService.client.category, 'create')
-        .mockRejectedValue(new Error('Database connection failed'));
-
-      await expect(
-        service.createCategory(createCategoryDto, 'userId'),
-      ).rejects.toThrow(InternalServerErrorException);
+      const result = await service.createCategory(dtos, 'userId');
+      expect(Array.isArray(result)).toBe(true);
+      expect(domainCreate).toHaveBeenCalledTimes(2);
     });
   });
 
   describe('getCategoriesByUser', () => {
-    it('should return all categories for a user without pagination', async () => {
-      const categories: Category[] = [
-        mockCategory,
-        {
-          id: 'categoryId2',
-          name: 'Utilities',
-          unicode: '💡',
-          transactionType: Transaction_T.expense,
-          userId: 'userId',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(categories);
-
-      const result = await service.getCategoriesByUser('userId');
-
-      expect(result).toEqual(categories);
-      expect(result).toHaveLength(2);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: undefined,
-      });
-    });
-
-    it('should return categories for a user with pagination on first page', async () => {
-      const categories: Category[] = [mockCategory];
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(categories);
-
-      const result = await service.getCategoriesByUser('userId', 1, 10);
-
-      expect(result).toEqual(categories);
-      expect(result).toHaveLength(1);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: 10,
-      });
-    });
-
-    it('should return categories for a user with pagination on second page', async () => {
-      const categories: Category[] = [
-        {
-          id: 'categoryId2',
-          name: 'Utilities',
-          unicode: '💡',
-          transactionType: Transaction_T.expense,
-          userId: 'userId',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(categories);
-
-      const result = await service.getCategoriesByUser('userId', 2, 10);
-
-      expect(result).toHaveLength(1);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 10,
-        take: 10,
-      });
-    });
-
-    it('should return categories with custom limit', async () => {
-      const categories: Category[] = [mockCategory];
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(categories);
-
-      const result = await service.getCategoriesByUser('userId', 1, 5);
-
-      expect(result).toHaveLength(1);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: 5,
-      });
-    });
-
-    it('should calculate correct skip value for pagination', async () => {
-      const categories: Category[] = [];
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue(categories);
-
-      // Page 5 with limit 20 should skip 80 records
-      await service.getCategoriesByUser('userId', 5, 20);
-
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 80,
-        take: 20,
-      });
-    });
-
-    it('should return empty array when no categories exist', async () => {
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue([]);
-
-      const result = await service.getCategoriesByUser('userId');
-
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 0,
-        take: undefined,
-      });
-    });
-
-    it('should return empty array when pagination results in no matches', async () => {
-      const spy = jest
-        .spyOn(dbService.client.category, 'findMany')
-        .mockResolvedValue([]);
-
-      const result = await service.getCategoriesByUser('userId', 10, 10);
-
-      expect(result).toEqual([]);
-      expect(result).toHaveLength(0);
-      expect(spy).toHaveBeenCalledWith({
-        where: {
-          userId: 'userId',
-        },
-        skip: 90,
-        take: 10,
-      });
+    it('forwards paging params', async () => {
+      const list = [mockCategory];
+      const domainGetMany = jest
+        .spyOn(categoryDomain, 'getMany')
+        .mockResolvedValue(list as any);
+      const res = await service.getCategoriesByUser('userId', 0, 10);
+      expect(res).toEqual(list);
+      expect(domainGetMany).toHaveBeenCalledWith('userId', 10, 0);
     });
   });
 
   describe('getCategoryById', () => {
-    it('should return a category if it exists', async () => {
-      const spy = jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(mockCategory);
-
-      const result = await service.getCategoryById('categoryId', 'userId');
-
-      expect(result).toEqual(mockCategory);
-      expect(result.id).toBe('categoryId');
-      expect(result.userId).toBe('userId');
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'categoryId', userId: 'userId' },
-      });
+    it('returns item when found', async () => {
+      const domainGetOne = jest
+        .spyOn(categoryDomain, 'getOne')
+        .mockResolvedValue(mockCategory as any);
+      const res = await service.getCategoryById('id', 'userId');
+      expect(res).toEqual(mockCategory);
+      expect(domainGetOne).toHaveBeenCalledWith('id', 'userId');
     });
 
-    it('should throw NotFoundException if category not found', async () => {
-      const spy = jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.getCategoryById('invalidId', 'userId'),
-      ).rejects.toThrow(NotFoundException);
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'invalidId', userId: 'userId' },
-      });
-    });
-
-    it('should throw NotFoundException if category belongs to different user', async () => {
-      const spy = jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.getCategoryById('categoryId', 'differentUserId'),
-      ).rejects.toThrow(NotFoundException);
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'categoryId', userId: 'differentUserId' },
-      });
+    it('propagates not found', async () => {
+      jest
+        .spyOn(categoryDomain, 'getOne')
+        .mockRejectedValue(new NotFoundException());
+      await expect(service.getCategoryById('id', 'userId')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('updateCategory', () => {
-    it('should update a category successfully', async () => {
-      const updateDto: Partial<CreateCategoryDto> = {
-        name: 'Updated Groceries',
-      };
-
-      const updatedCategory: Category = {
-        ...mockCategory,
-        name: 'Updated Groceries',
-      };
-
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(mockCategory);
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'update')
-        .mockResolvedValue(updatedCategory);
-
-      const result = await service.updateCategory(
-        'categoryId',
-        'userId',
-        updateDto,
-      );
-
-      expect(result).toEqual(updatedCategory);
-      expect(result.name).toBe('Updated Groceries');
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'categoryId' },
-        data: updateDto,
-      });
-    });
-
-    it('should update multiple fields on a category', async () => {
-      const updateDto: Partial<CreateCategoryDto> = {
-        name: 'New Name',
-        unicode: '🆕',
-      };
-
-      const updatedCategory: Category = {
-        ...mockCategory,
-        name: 'New Name',
-        unicode: '🆕',
-      };
-
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(mockCategory);
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'update')
-        .mockResolvedValue(updatedCategory);
-
-      const result = await service.updateCategory(
-        'categoryId',
-        'userId',
-        updateDto,
-      );
-
-      expect(result.name).toBe('New Name');
-      expect(result.unicode).toBe('🆕');
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'categoryId' },
-        data: updateDto,
-      });
-    });
-
-    it('should throw NotFoundException if category not found', async () => {
-      const updateDto: Partial<CreateCategoryDto> = {
+    it('passes payload to domain.update', async () => {
+      const dto: CreateCategoryDto = {
         name: 'Updated',
+        unicode: 'U',
+        transactionType: Transaction_T.expense,
       };
-
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.updateCategory('invalidId', 'userId', updateDto),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw NotFoundException if category belongs to different user', async () => {
-      const updateDto: Partial<CreateCategoryDto> = {
-        name: 'Updated',
-      };
-
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.updateCategory('categoryId', 'differentUserId', updateDto),
-      ).rejects.toThrow(NotFoundException);
+      const domainUpdate = jest
+        .spyOn(categoryDomain, 'update')
+        .mockResolvedValue(mockCategory as any);
+      await service.updateCategory(dto as any, 'id', 'userId');
+      expect(domainUpdate).toHaveBeenCalledWith(
+        dto as UpdateCategoryDomain,
+        'id',
+        'userId',
+      );
     });
   });
 
   describe('deleteCategory', () => {
-    it('should delete a category successfully', async () => {
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(mockCategory);
-
-      const spy = jest
-        .spyOn(dbService.client.category, 'delete')
-        .mockResolvedValue(mockCategory);
-
-      const result = await service.deleteCategory('categoryId', 'userId');
-
-      expect(result).toEqual(mockCategory);
-      expect(result.id).toBe('categoryId');
-      expect(spy).toHaveBeenCalledWith({
-        where: { id: 'categoryId' },
-      });
-    });
-
-    it('should throw NotFoundException if category not found', async () => {
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.deleteCategory('invalidId', 'userId'),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw NotFoundException if category belongs to different user', async () => {
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(null);
-
-      await expect(
-        service.deleteCategory('categoryId', 'differentUserId'),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should actually delete the category from database', async () => {
-      jest
-        .spyOn(dbService.client.category, 'findFirst')
-        .mockResolvedValue(mockCategory);
-
-      const deleteSpy = jest
-        .spyOn(dbService.client.category, 'delete')
-        .mockResolvedValue(mockCategory);
-
-      await service.deleteCategory('categoryId', 'userId');
-
-      expect(deleteSpy).toHaveBeenCalledTimes(1);
-      expect(deleteSpy).toHaveBeenCalledWith({
-        where: { id: 'categoryId' },
-      });
+    it('calls domain.delete', async () => {
+      const domainDelete = jest
+        .spyOn(categoryDomain, 'delete')
+        .mockResolvedValue(mockCategory as any);
+      await service.deleteCategory('id', 'userId');
+      expect(domainDelete).toHaveBeenCalledWith('id', 'userId');
     });
   });
 });

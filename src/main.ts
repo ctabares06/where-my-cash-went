@@ -8,4 +8,4 @@ async function bootstrap() {
   app.useGlobalPipes(new DtoValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

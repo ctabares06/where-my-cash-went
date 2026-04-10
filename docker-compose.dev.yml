@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17.9-alpine
+    container_name: postgres_db
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    container_name: app
+    working_dir: /app
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: ['pnpm', 'start']
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsEnum, IsInt, IsOptional, ValidateIf, Min } from 'class-validator';
-import { Cycle_T } from '../../../lib/ormClient/enums';
-import { CreatePeriodicDto } from './create-periodic.dto';
+import { Cycle_T } from '@/lib/ormClient/enums';
+import { CreatePeriodicDto } from '@/applications/periodic/dtos/create-periodic.dto';
 
 export class UpdatePeriodicDto extends PartialType(CreatePeriodicDto) {
   @IsOptional()

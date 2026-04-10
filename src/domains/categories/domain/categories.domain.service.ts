@@ -1,12 +1,16 @@
-import { CategoryEntity, CategoryProps } from '../entities/category.entity';
-import { ICategoryRepository } from '../ports/category.repository.port';
+import {
+  CategoryEntity,
+  CategoryProps,
+} from '@/domains/categories/entities/category.entity';
+import type { ICategoryRepository } from '@/domains/categories/ports/category.repository.port';
 import {
   NotFoundDomainException,
   ValidationDomainException,
-} from '../../shared/errors/domain.exception';
-import { CategoryAlreadyExistsException } from '../errors/category.errors';
-import { DomainService } from '../../base/domain-service';
-import { Transaction_T } from '../../../lib/ormClient/enums';
+} from '@/domains/shared/errors/domain.exception';
+import { CategoryAlreadyExistsException } from '@/domains/categories/errors/category.errors';
+import { Transaction_T } from '@/lib/ormClient/enums';
+import { Inject, Injectable } from '@nestjs/common';
+import { CATEGORY_REPOSITORY } from '@/infrastructure/wiring/tokens';
 
 export type CreateCategoryInput = {
   name: string;
@@ -22,10 +26,12 @@ export type UpdateCategoryInput = {
 /**
  * Category Domain Service - Pure business logic, no framework dependencies
  */
-export class CategoriesDomainService extends DomainService {
-  constructor(private readonly categoryRepository: ICategoryRepository) {
-    super();
-  }
+@Injectable()
+export class CategoriesDomainService {
+  constructor(
+    @Inject(CATEGORY_REPOSITORY)
+    private readonly categoryRepository: ICategoryRepository,
+  ) {}
 
   async create(
     input: CreateCategoryInput,

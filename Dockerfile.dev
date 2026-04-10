@@ -1,0 +1,6 @@
+FROM node:24-bookworm-slim
+
+RUN sh -c "npm i -g pnpm@10"
+
+CMD sh -c "pnpm migrate:deploy && pnpm start:dev"
+

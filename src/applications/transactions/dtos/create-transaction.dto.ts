@@ -6,7 +6,7 @@ import {
   IsUUID,
   ValidateIf,
 } from 'class-validator';
-import { Transaction_T } from '../../../lib/ormClient/enums';
+import { Transaction_T } from '@/lib/ormClient/enums';
 
 export class CreateTransactionDto {
   @IsInt()

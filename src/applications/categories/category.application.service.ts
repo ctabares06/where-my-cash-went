@@ -1,15 +1,18 @@
-import { CategoriesDomainService } from '../../domains/categories/domain/categories.domain.service';
-import { CreateCategoryDto } from './dtos/create-category.dto';
-import { UpdateCategoryDto } from './dtos/update-category.dto';
+import { CategoriesDomainService } from '@/domains/categories/domain/categories.domain.service';
+import { CreateCategoryDto } from '@/applications/categories/dtos/create-category.dto';
+import { UpdateCategoryDto } from '@/applications/categories/dtos/update-category.dto';
 import {
   CategoryResponseDto,
   CategoryListResponseDto,
-} from './dtos/category-response.dto';
+} from '@/applications/categories/dtos/category-response.dto';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Category Application Service - Use case orchestration
  * Depends on domain services, not on infrastructure
  */
+
+@Injectable()
 export class CategoryApplicationService {
   constructor(
     private readonly categoryDomainService: CategoriesDomainService,

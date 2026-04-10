@@ -1,4 +1,7 @@
-import { CategoryEntity, CategoryProps } from '../entities/category.entity';
+import {
+  CategoryEntity,
+  CategoryProps,
+} from '@/domains/categories/entities/category.entity';
 
 /**
  * Category Repository Port - Interface defined in domain

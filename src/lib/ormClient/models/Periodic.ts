@@ -206,7 +206,7 @@ export type PeriodicGroupByOutputType = {
   _max: PeriodicMaxAggregateOutputType | null
 }
 
-type GetPeriodicGroupByPayload<T extends PeriodicGroupByArgs> = Prisma.PrismaPromise<
+export type GetPeriodicGroupByPayload<T extends PeriodicGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PeriodicGroupByOutputType, T['by']> &
       {
@@ -1248,6 +1248,11 @@ export type PeriodicFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` Periodics.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Periodics.
+   */
   distinct?: Prisma.PeriodicScalarFieldEnum | Prisma.PeriodicScalarFieldEnum[]
 }
 

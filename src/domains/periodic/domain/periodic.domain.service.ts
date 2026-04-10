@@ -1,15 +1,18 @@
+import { Inject, Injectable } from '@nestjs/common';
 import {
   PeriodicEntity,
   PeriodicProps,
   PeriodicWithTransactionProps,
-} from '../entities/periodic.entity';
-import { IPeriodicRepository } from '../ports/periodic.repository.port';
-import { ITransactionRepository } from '../../transactions/ports/transaction.repository.port';
-import { NotFoundDomainException } from '../../shared/errors/domain.exception';
-import { PeriodicValidationException } from '../errors/periodic.errors';
-import { DomainService } from '../../base/domain-service';
-import { Cycle_T } from '../../../lib/ormClient/enums';
-import { TransactionEntity } from '../../transactions/entities/transaction.entity';
+} from '@/domains/periodic/entities/periodic.entity';
+import type { IPeriodicRepository } from '@/domains/periodic/ports/periodic.repository.port';
+import type { ITransactionRepository } from '@/domains/transactions/ports/transaction.repository.port';
+import { NotFoundDomainException } from '@/domains/shared/errors/domain.exception';
+import { PeriodicValidationException } from '@/domains/periodic/errors/periodic.errors';
+import { DomainService } from '@/domains/base/domain-service';
+import { Cycle_T } from '@/lib/ormClient/enums';
+import { TransactionEntity } from '@/domains/transactions/entities/transaction.entity';
+import { PERIODIC_REPOSITORY } from '@/infrastructure/wiring/tokens';
+import { TRANSACTION_REPOSITORY } from '@/infrastructure/wiring/tokens';
 
 export type CreatePeriodicInput = {
   cycle: Cycle_T;
@@ -27,9 +30,12 @@ export type UpdatePeriodicInput = {
 /**
  * Periodic Domain Service - Pure business logic, no framework dependencies
  */
+@Injectable()
 export class PeriodicDomainService extends DomainService {
   constructor(
+    @Inject(PERIODIC_REPOSITORY)
     private readonly periodicRepository: IPeriodicRepository,
+    @Inject(TRANSACTION_REPOSITORY)
     private readonly transactionRepository: ITransactionRepository,
   ) {
     super();

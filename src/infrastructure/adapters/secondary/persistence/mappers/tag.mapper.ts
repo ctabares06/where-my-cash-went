@@ -1,5 +1,5 @@
-import { TagEntity } from '../../../../../domains/tags/entities/tag.entity';
-import { Tags } from '../../../../../lib/ormClient/client';
+import { TagEntity } from '@/domains/tags/entities/tag.entity';
+import { Tags } from '@/lib/ormClient/client';
 
 export class TagMapper {
   static toDomain(entity: Tags): TagEntity {

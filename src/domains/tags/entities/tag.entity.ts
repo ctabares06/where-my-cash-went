@@ -1,4 +1,4 @@
-import { Entity } from '../../base/entity';
+import { Entity } from '@/domains/base/entity';
 
 /**
  * Tag Entity - Pure domain object, no framework dependencies

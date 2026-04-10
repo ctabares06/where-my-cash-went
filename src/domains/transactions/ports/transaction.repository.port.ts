@@ -2,7 +2,7 @@ import {
   TransactionEntity,
   TransactionWithRelations,
   TransactionProps,
-} from '../entities/transaction.entity';
+} from '@/domains/transactions/entities/transaction.entity';
 
 /**
  * Transaction Repository Port - Interface defined in domain

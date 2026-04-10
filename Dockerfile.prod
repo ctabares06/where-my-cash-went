@@ -1,0 +1,15 @@
+FROM node:24-bookworm-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+
+RUN sh -c "npm i -g pnpm@10"
+
+RUN sh -c "pnpm install" 
+
+COPY . .
+
+RUN sh -c "pnpm build"

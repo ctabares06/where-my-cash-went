@@ -1,8 +1,8 @@
 import {
   TransactionEntity,
   TransactionWithRelations,
-} from '../../../../../domains/transactions/entities/transaction.entity';
-import { Transaction } from '../../../../../lib/ormClient/client';
+} from '@/domains/transactions/entities/transaction.entity';
+import { Transaction } from '@/lib/ormClient/client';
 
 export class TransactionMapper {
   static toDomain(entity: Transaction): TransactionEntity {

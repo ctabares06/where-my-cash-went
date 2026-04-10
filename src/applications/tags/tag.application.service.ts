@@ -1,11 +1,16 @@
-import { TagsDomainService } from '../../domains/tags/domain/tags.domain.service';
-import { CreateTagDto } from './dtos/create-tag.dto';
-import { UpdateTagDto } from './dtos/update-tag.dto';
-import { TagResponseDto, TagListResponseDto } from './dtos/tag-response.dto';
+import { Injectable } from '@nestjs/common';
+import { TagsDomainService } from '@/domains/tags/domain/tags.domain.service';
+import { CreateTagDto } from '@/applications/tags/dtos/create-tag.dto';
+import { UpdateTagDto } from '@/applications/tags/dtos/update-tag.dto';
+import {
+  TagResponseDto,
+  TagListResponseDto,
+} from '@/applications/tags/dtos/tag-response.dto';
 
 /**
  * Tag Application Service - Use case orchestration
  */
+@Injectable()
 export class TagApplicationService {
   constructor(private readonly tagDomainService: TagsDomainService) {}
 

@@ -137,7 +137,7 @@ export type TagsOnTransactionsGroupByOutputType = {
   _max: TagsOnTransactionsMaxAggregateOutputType | null
 }
 
-type GetTagsOnTransactionsGroupByPayload<T extends TagsOnTransactionsGroupByArgs> = Prisma.PrismaPromise<
+export type GetTagsOnTransactionsGroupByPayload<T extends TagsOnTransactionsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<TagsOnTransactionsGroupByOutputType, T['by']> &
       {
@@ -1126,6 +1126,11 @@ export type TagsOnTransactionsFindManyArgs<ExtArgs extends runtime.Types.Extensi
    * Skip the first `n` TagsOnTransactions.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of TagsOnTransactions.
+   */
   distinct?: Prisma.TagsOnTransactionsScalarFieldEnum | Prisma.TagsOnTransactionsScalarFieldEnum[]
 }
 

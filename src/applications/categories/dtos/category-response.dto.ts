@@ -1,4 +1,4 @@
-import { CategoryProps } from '../../../domains/categories/entities/category.entity';
+import { CategoryProps } from '@/domains/categories/entities/category.entity';
 
 export type CategoryResponseDto = {
   data: CategoryProps[];

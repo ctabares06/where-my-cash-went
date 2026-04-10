@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '../../../../../lib/ormClient/client';
-import { ITagRepository } from '../../../../../domains/tags/ports/tag.repository.port';
-import {
-  TagEntity,
-  TagProps,
-} from '../../../../../domains/tags/entities/tag.entity';
-import { TagMapper } from '../mappers/tag.mapper';
+import { ITagRepository } from '@/domains/tags/ports/tag.repository.port';
+import { TagEntity, TagProps } from '@/domains/tags/entities/tag.entity';
+import { TagMapper } from '@/infrastructure/adapters/secondary/persistence/mappers/tag.mapper';
+import { PrismaClientProvider } from '@/infrastructure/adapters/secondary/persistence/prisma/prisma-client.provider';
 
 const tagSelect = {
   id: true,
@@ -17,7 +14,7 @@ const tagSelect = {
 
 @Injectable()
 export class TagRepository implements ITagRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientProvider) {}
 
   async create(entity: TagEntity): Promise<TagProps> {
     const data = TagMapper.toProps(entity);

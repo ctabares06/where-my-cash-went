@@ -2,7 +2,7 @@ import {
   PeriodicEntity,
   PeriodicProps,
   PeriodicWithTransactionProps,
-} from '../entities/periodic.entity';
+} from '@/domains/periodic/entities/periodic.entity';
 
 /**
  * Periodic Repository Port - Interface defined in domain

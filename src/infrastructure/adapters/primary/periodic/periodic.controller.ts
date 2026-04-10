@@ -10,11 +10,11 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { PeriodicApplicationService } from '../../../../applications/periodic/periodic.application.service';
-import { CreatePeriodicDto } from '../../../../applications/periodic/dtos/create-periodic.dto';
-import { UpdatePeriodicDto } from '../../../../applications/periodic/dtos/update-periodic.dto';
-import { PeriodicListResponseDto } from '../../../../applications/periodic/dtos/periodic-response.dto';
-import type { UserSession } from '../../../../lib/auth.types';
+import { PeriodicApplicationService } from '@/applications/periodic/periodic.application.service';
+import { CreatePeriodicDto } from '@/applications/periodic/dtos/create-periodic.dto';
+import { UpdatePeriodicDto } from '@/applications/periodic/dtos/update-periodic.dto';
+import { PeriodicListResponseDto } from '@/applications/periodic/dtos/periodic-response.dto';
+import type { UserSession } from '@/lib/auth.types';
 
 @Controller('periodics')
 export class PeriodicController {

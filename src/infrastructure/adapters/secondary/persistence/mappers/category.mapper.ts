@@ -1,5 +1,5 @@
-import { CategoryEntity } from '../../../../../domains/categories/entities/category.entity';
-import { Category } from '../../../../../lib/ormClient/client';
+import { CategoryEntity } from '@/domains/categories/entities/category.entity';
+import { Category } from '@/lib/ormClient/client';
 
 export class CategoryMapper {
   static toDomain(entity: Category): CategoryEntity {

@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '../../../../../lib/ormClient/client';
-import { ICategoryRepository } from '../../../../../domains/categories/ports/category.repository.port';
+import { ICategoryRepository } from '@/domains/categories/ports/category.repository.port';
 import {
   CategoryEntity,
   CategoryProps,
-} from '../../../../../domains/categories/entities/category.entity';
-import { CategoryMapper } from '../mappers/category.mapper';
+} from '@/domains/categories/entities/category.entity';
+import { CategoryMapper } from '@/infrastructure/adapters/secondary/persistence/mappers/category.mapper';
+import { PrismaClientProvider } from '@/infrastructure/adapters/secondary/persistence/prisma/prisma-client.provider';
+import { Injectable } from '@nestjs/common';
 
 const categorySelect = {
   id: true,
@@ -19,7 +19,7 @@ const categorySelect = {
 
 @Injectable()
 export class CategoryRepository implements ICategoryRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientProvider) {}
 
   async create(entity: CategoryEntity): Promise<CategoryProps> {
     const data = CategoryMapper.toProps(entity);

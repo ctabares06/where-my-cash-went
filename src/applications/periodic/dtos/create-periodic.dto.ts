@@ -7,7 +7,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { Cycle_T } from '../../../lib/ormClient/enums';
+import { Cycle_T } from '@/lib/ormClient/enums';
 
 export class CreatePeriodicDto {
   @IsEnum(Cycle_T)

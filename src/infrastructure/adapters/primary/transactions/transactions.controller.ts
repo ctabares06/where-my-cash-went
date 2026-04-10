@@ -11,11 +11,11 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { TransactionApplicationService } from '../../../../applications/transactions/transaction.application.service';
-import { CreateTransactionDto } from '../../../../applications/transactions/dtos/create-transaction.dto';
-import { UpdateTransactionDto } from '../../../../applications/transactions/dtos/update-transaction.dto';
-import { TransactionListResponseDto } from '../../../../applications/transactions/dtos/transaction-response.dto';
-import type { UserSession } from '../../../../lib/auth.types';
+import { TransactionApplicationService } from '@/applications/transactions/transaction.application.service';
+import { CreateTransactionDto } from '@/applications/transactions/dtos/create-transaction.dto';
+import { UpdateTransactionDto } from '@/applications/transactions/dtos/update-transaction.dto';
+import { TransactionListResponseDto } from '@/applications/transactions/dtos/transaction-response.dto';
+import type { UserSession } from '@/lib/auth.types';
 
 @Controller('transactions')
 export class TransactionsController {

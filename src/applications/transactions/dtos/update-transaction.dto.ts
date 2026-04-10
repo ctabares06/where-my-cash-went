@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { IsInt, IsOptional, IsString, IsUUID } from 'class-validator';
-import { CreateTransactionDto } from './create-transaction.dto';
+import { CreateTransactionDto } from '@/applications/transactions/dtos/create-transaction.dto';
 
 export class UpdateTransactionDto extends PartialType(CreateTransactionDto) {
   @IsOptional()

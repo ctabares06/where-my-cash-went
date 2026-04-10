@@ -1,7 +1,7 @@
 import {
   NotFoundDomainException,
   DomainException,
-} from '../../shared/errors/domain.exception';
+} from '@/domains/shared/errors/domain.exception';
 
 export class TransactionNotFoundException extends NotFoundDomainException {
   constructor(transactionId: string) {

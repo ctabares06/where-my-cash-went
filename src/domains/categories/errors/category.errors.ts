@@ -1,7 +1,7 @@
 import {
   NotFoundDomainException,
   DomainException,
-} from '../../shared/errors/domain.exception';
+} from '@/domains/shared/errors/domain.exception';
 
 export class CategoryNotFoundException extends NotFoundDomainException {
   constructor(categoryId: string) {

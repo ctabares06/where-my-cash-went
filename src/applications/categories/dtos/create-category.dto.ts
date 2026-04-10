@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsOptional, IsArray } from 'class-validator';
-import { IsValidUnicode } from '../../../lib/validations';
-import { Transaction_T } from '../../../lib/ormClient/enums';
+import { IsValidUnicode } from '@/lib/validations';
+import { Transaction_T } from '@/lib/ormClient/enums';
 
 export class CreateCategoryDto {
   @IsString()

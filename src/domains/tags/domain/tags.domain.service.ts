@@ -1,11 +1,13 @@
-import { TagEntity, TagProps } from '../entities/tag.entity';
-import { ITagRepository } from '../ports/tag.repository.port';
+import { Inject, Injectable } from '@nestjs/common';
+import { TagEntity, TagProps } from '@/domains/tags/entities/tag.entity';
+import type { ITagRepository } from '@/domains/tags/ports/tag.repository.port';
 import {
   NotFoundDomainException,
   ValidationDomainException,
-} from '../../shared/errors/domain.exception';
-import { TagAlreadyExistsException } from '../errors/tag.errors';
-import { DomainService } from '../../base/domain-service';
+} from '@/domains/shared/errors/domain.exception';
+import { TagAlreadyExistsException } from '@/domains/tags/errors/tag.errors';
+import { DomainService } from '@/domains/base/domain-service';
+import { TAG_REPOSITORY } from '@/infrastructure/wiring/tokens';
 
 export type CreateTagInput = {
   name: string;
@@ -18,8 +20,11 @@ export type UpdateTagInput = {
 /**
  * Tag Domain Service - Pure business logic, no framework dependencies
  */
+@Injectable()
 export class TagsDomainService extends DomainService {
-  constructor(private readonly tagRepository: ITagRepository) {
+  constructor(
+    @Inject(TAG_REPOSITORY) private readonly tagRepository: ITagRepository,
+  ) {
     super();
   }
 

@@ -11,11 +11,11 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { TagApplicationService } from '../../../../applications/tags/tag.application.service';
-import { CreateTagDto } from '../../../../applications/tags/dtos/create-tag.dto';
-import { UpdateTagDto } from '../../../../applications/tags/dtos/update-tag.dto';
-import { TagListResponseDto } from '../../../../applications/tags/dtos/tag-response.dto';
-import type { UserSession } from '../../../../lib/auth.types';
+import { TagApplicationService } from '@/applications/tags/tag.application.service';
+import { CreateTagDto } from '@/applications/tags/dtos/create-tag.dto';
+import { UpdateTagDto } from '@/applications/tags/dtos/update-tag.dto';
+import { TagListResponseDto } from '@/applications/tags/dtos/tag-response.dto';
+import type { UserSession } from '@/lib/auth.types';
 
 @Controller('tags')
 export class TagsController {

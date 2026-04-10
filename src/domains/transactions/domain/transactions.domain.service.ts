@@ -1,14 +1,16 @@
+import { Inject, Injectable } from '@nestjs/common';
 import {
   TransactionEntity,
   TransactionWithRelations,
-} from '../entities/transaction.entity';
-import { ITransactionRepository } from '../ports/transaction.repository.port';
+} from '@/domains/transactions/entities/transaction.entity';
+import type { ITransactionRepository } from '@/domains/transactions/ports/transaction.repository.port';
 import {
   NotFoundDomainException,
   ValidationDomainException,
-} from '../../shared/errors/domain.exception';
-import { DomainService } from '../../base/domain-service';
-import { Transaction_T } from '../../../lib/ormClient/enums';
+} from '@/domains/shared/errors/domain.exception';
+import { DomainService } from '@/domains/base/domain-service';
+import { Transaction_T } from '@/lib/ormClient/enums';
+import { TRANSACTION_REPOSITORY } from '@/infrastructure/wiring/tokens';
 
 export type CreateTransactionInput = {
   quantity: number;
@@ -28,8 +30,12 @@ export type UpdateTransactionInput = {
 /**
  * Transaction Domain Service - Pure business logic, no framework dependencies
  */
+@Injectable()
 export class TransactionsDomainService extends DomainService {
-  constructor(private readonly transactionRepository: ITransactionRepository) {
+  constructor(
+    @Inject(TRANSACTION_REPOSITORY)
+    private readonly transactionRepository: ITransactionRepository,
+  ) {
     super();
   }
 

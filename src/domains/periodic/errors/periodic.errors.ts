@@ -1,7 +1,7 @@
 import {
   NotFoundDomainException,
   DomainException,
-} from '../../shared/errors/domain.exception';
+} from '@/domains/shared/errors/domain.exception';
 
 export class PeriodicNotFoundException extends NotFoundDomainException {
   constructor(periodicId: string) {

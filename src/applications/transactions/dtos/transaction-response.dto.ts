@@ -1,4 +1,4 @@
-import { TransactionWithRelations } from '../../../domains/transactions/entities/transaction.entity';
+import { TransactionWithRelations } from '@/domains/transactions/entities/transaction.entity';
 
 export type TransactionResponseDto = {
   data: TransactionWithRelations[];

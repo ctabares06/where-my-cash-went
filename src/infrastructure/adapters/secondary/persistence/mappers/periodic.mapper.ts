@@ -1,5 +1,5 @@
-import { PeriodicEntity } from '../../../../../domains/periodic/entities/periodic.entity';
-import { Periodic } from '../../../../../lib/ormClient/client';
+import { PeriodicEntity } from '@/domains/periodic/entities/periodic.entity';
+import { Periodic } from '@/lib/ormClient/client';
 
 export class PeriodicMapper {
   static toDomain(entity: Periodic): PeriodicEntity {

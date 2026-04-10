@@ -81,6 +81,43 @@ This project follows **Hexagonal Architecture** (Ports and Adapters) pattern:
 - Avoid `any` type
 - **Domain layer has ZERO framework imports** - pure TypeScript only
 
+### NestJS Provider Decorators
+
+All NestJS providers MUST have `@Injectable()` decorator:
+
+| Type                 | Decorator Required | Example                                          |
+| -------------------- | ------------------ | ------------------------------------------------ |
+| Domain Services      | ✅ @Injectable()   | `@Injectable() export class XDomainService`      |
+| Application Services | ✅ @Injectable()   | `@Injectable() export class XApplicationService` |
+| Repositories         | ✅ @Injectable()   | `@Injectable() export class XRepository`         |
+| Controllers          | ✅ @Controller()   | Already has it by default                        |
+
+**Domain Layer Exception**: Domain services in hexagonal architecture CAN have @Injectable if they need to inject port interfaces. They are still framework-agnostic in logic - only the DI mechanism uses NestJS.
+
+### Path Alias
+
+The project uses `@/` as an alias for `src/`:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+**Usage**:
+
+```typescript
+// Instead of:
+import { Something } from '../../../domains/something/ports/something.port';
+
+// Use:
+import { Something } from '@/domains/something/ports/something.port';
+```
+
 ---
 
 ## Naming Conventions
@@ -232,22 +269,79 @@ infrastructure/adapters/secondary/
 
 **Location**: `src/infrastructure/wiring/`
 
+**CRITICAL: No @Global() Modules**
+
+- ❌ Do NOT use `@Global()` decorator on any module
+- ✅ All dependencies must be explicitly imported
+
+**Dependency Chain** (mandatory):
+
+```
+AppModule
+  └── PrimaryAdapterModule (controllers)
+        └── ApplicationModule (orchestration)
+              └── DomainModule (business logic)
+                    └── InfrastructureModule (repositories, DB)
+```
+
 **Rules**:
 
-- Configure NestJS dependency injection
-- Wire ports to repository implementations
-- Import and export services between layers
+1. Each module imports what it needs
+2. InfrastructureModule exports repositories + tokens
+3. DomainModule re-exports InfrastructureModule
+4. ApplicationModule imports DomainModule only
+5. PrimaryAdapterModule imports ApplicationModule only
 
-**Contents**:
+**Files**:
 
 ```
 infrastructure/wiring/
-├── app.module.ts            # Root module
-├── infrastructure.module.ts # Global infrastructure (DB, config)
-├── application.module.ts    # Application services
-├── primary-adapter.module.ts # Controllers
-├── domain.module.ts         # Domain services
-└── tokens.ts               # DI injection tokens (Symbols)
+├── app.module.ts            # Root - imports PrimaryAdapterModule, ConfigModule, AuthModule
+├── infrastructure.module.ts # DB providers, repositories, NO @Global()
+├── application.module.ts    # Imports DomainModule only
+├── primary-adapter.module.ts # Imports ApplicationModule, ScheduleModule
+├── domain.module.ts         # Imports InfrastructureModule, re-exports it
+└── tokens.ts               # DI injection tokens (Symbol)
+```
+
+**Tokens Pattern**:
+
+```typescript
+// tokens.ts
+export const CATEGORY_REPOSITORY = Symbol('ICategoryRepository');
+```
+
+**Module Registration Example**:
+
+```typescript
+// infrastructure.module.ts
+@Module({
+  providers: [
+    CategoryRepository,
+    { provide: CATEGORY_REPOSITORY, useExisting: CategoryRepository },
+  ],
+  exports: [
+    CategoryRepository,
+    CATEGORY_REPOSITORY, // Must export token too!
+  ],
+})
+export class InfrastructureModule {}
+
+// domain.module.ts
+@Module({
+  imports: [InfrastructureModule],
+  providers: [CategoriesDomainService],
+  exports: [CategoriesDomainService, InfrastructureModule],
+})
+export class DomainModule {}
+
+// application.module.ts
+@Module({
+  imports: [DomainModule], // Only DomainModule
+  providers: [CategoryApplicationService],
+  exports: [CategoryApplicationService],
+})
+export class ApplicationModule {}
 ```
 
 ---
@@ -292,6 +386,28 @@ Primary Adapter → Application → Domain → Ports (interfaces)
 2. **Ports are defined in domain** - Interfaces live in `domains/[module]/ports/`
 3. **Repositories implement ports** - Implementations live in infrastructure
 4. **Controllers never access repositories directly** - Go through application → domain → port
+
+### Dependency Injection for Ports
+
+Domain services MUST use `@Inject(TOKEN)` when injecting port interfaces:
+
+```typescript
+// WRONG - interfaces don't exist at runtime
+constructor(private readonly repo: ICategoryRepository) { }
+
+// CORRECT - use @Inject with the token
+constructor(
+  @Inject(CATEGORY_REPOSITORY)
+  private readonly repo: ICategoryRepository,
+) { }
+```
+
+**Flow**:
+
+1. Domain defines `ICategoryRepository` port interface
+2. Infrastructure registers `CategoryRepository` with token `CATEGORY_REPOSITORY`
+3. Domain service injects via `@Inject(CATEGORY_REPOSITORY)`
+4. NestJS resolves the dependency
 
 ---
 
@@ -408,9 +524,49 @@ src/
 - **NestJS v11** - Core framework
 - **Prisma v7** - ORM with PostgreSQL adapter
 - **better-auth** - Authentication library
-- **@thallesp/nestjs-better-auth** - NestJS integration for better-auth
+- **@thallesp/nestjs-better-auth** - NestJS integration for better-auth (note: TWO L's)
 - **class-validator** - DTO validation
-- **class-transformer** - Object transformation
+- **class-transformer** - Object transformation (plainToInstance)
 - **Jest v30** - Testing
-- **TypeScript v5.7** - Language
+- **TypeScript v5.7** - Language with path aliases
 - **ESLint v9 + Prettier v3** - Linting and formatting
+
+---
+
+## Docker Configuration
+
+### docker-compose.dev.yml (Development)
+
+- App and PostgreSQL on same `app-network`
+- Database NOT exposed externally (no port mapping)
+- App connects via `postgres:5432` (container hostname)
+- Use `docker compose up --watch` for hot reload
+
+### docker-compose.prod.yml (Production)
+
+- Nginx as reverse proxy (port 80 only)
+- App only accessible through nginx (no direct port exposure)
+- App connects to DB via Docker network
+
+### Nginx Reverse Proxy (Production)
+
+- Listens on port 80
+- Proxies to `http://app:3000`
+- Handles health checks at `/health`
+- App service healthcheck verifies DB connectivity
+
+---
+
+## Health Check Implementation (Hexagonal)
+
+```
+Controller → ApplicationService → DomainService → Port → Repository
+```
+
+**Files**:
+
+- Domain Port: `src/domains/health/ports/health-check.port.ts`
+- Domain Service: `src/domains/health/domain/health.domain-service.ts`
+- Application: `src/applications/health/health.application.service.ts`
+- Repository: `src/infrastructure/adapters/secondary/persistence/repositories/health.repository.ts`
+- Controller: `src/infrastructure/adapters/primary/health/health.controller.ts`

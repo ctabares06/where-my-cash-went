@@ -1,5 +1,5 @@
-import { Entity } from '../../base/entity';
-import { Transaction_T } from '../../../lib/ormClient/enums';
+import { Entity } from '@/domains/base/entity';
+import { Transaction_T } from '@/lib/ormClient/enums';
 
 /**
  * Category Entity - Pure domain object, no framework dependencies

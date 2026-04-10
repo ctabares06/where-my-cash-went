@@ -1,15 +1,17 @@
-import { TransactionsDomainService } from '../../domains/transactions/domain/transactions.domain.service';
-import { CreateTransactionDto } from './dtos/create-transaction.dto';
-import { UpdateTransactionDto } from './dtos/update-transaction.dto';
+import { Injectable } from '@nestjs/common';
+import { TransactionsDomainService } from '@/domains/transactions/domain/transactions.domain.service';
+import { CreateTransactionDto } from '@/applications/transactions/dtos/create-transaction.dto';
+import { UpdateTransactionDto } from '@/applications/transactions/dtos/update-transaction.dto';
 import {
   TransactionResponseDto,
   TransactionListResponseDto,
-} from './dtos/transaction-response.dto';
+} from '@/applications/transactions/dtos/transaction-response.dto';
 import { InternalServerErrorException } from '@nestjs/common';
 
 /**
  * Transaction Application Service - Use case orchestration
  */
+@Injectable()
 export class TransactionApplicationService {
   constructor(
     private readonly transactionDomainService: TransactionsDomainService,

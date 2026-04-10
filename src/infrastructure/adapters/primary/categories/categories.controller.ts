@@ -11,11 +11,11 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { CategoryApplicationService } from '../../../../applications/categories/category.application.service';
-import { CreateCategoryDto } from '../../../../applications/categories/dtos/create-category.dto';
-import { UpdateCategoryDto } from '../../../../applications/categories/dtos/update-category.dto';
-import { CategoryListResponseDto } from '../../../../applications/categories/dtos/category-response.dto';
-import type { UserSession } from '../../../../lib/auth.types';
+import { CategoryApplicationService } from '@/applications/categories/category.application.service';
+import { CreateCategoryDto } from '@/applications/categories/dtos/create-category.dto';
+import { UpdateCategoryDto } from '@/applications/categories/dtos/update-category.dto';
+import { CategoryListResponseDto } from '@/applications/categories/dtos/category-response.dto';
+import type { UserSession } from '@/lib/auth.types';
 
 @Controller('categories')
 export class CategoriesController {

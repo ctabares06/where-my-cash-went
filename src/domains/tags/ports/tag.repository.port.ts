@@ -1,4 +1,4 @@
-import { TagEntity, TagProps } from '../entities/tag.entity';
+import { TagEntity, TagProps } from '@/domains/tags/entities/tag.entity';
 
 /**
  * Tag Repository Port - Interface defined in domain

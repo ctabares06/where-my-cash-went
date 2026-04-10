@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { IS_VALID_UNICODE } from './consts';
+import { IS_VALID_UNICODE } from '@/lib/consts';
 
 export const IsValidUnicode =
   (property?: string, options?: ValidationOptions) =>

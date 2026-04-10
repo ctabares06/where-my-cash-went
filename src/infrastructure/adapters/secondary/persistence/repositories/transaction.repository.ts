@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '../../../../../lib/ormClient/client';
-import { ITransactionRepository } from '../../../../../domains/transactions/ports/transaction.repository.port';
+import { ITransactionRepository } from '@/domains/transactions/ports/transaction.repository.port';
 import {
   TransactionEntity,
   TransactionWithRelations,
   TransactionProps,
-} from '../../../../../domains/transactions/entities/transaction.entity';
-import { TransactionMapper } from '../mappers/transaction.mapper';
+} from '@/domains/transactions/entities/transaction.entity';
+import { TransactionMapper } from '@/infrastructure/adapters/secondary/persistence/mappers/transaction.mapper';
+import { PrismaClientProvider } from '@/infrastructure/adapters/secondary/persistence/prisma/prisma-client.provider';
 
 const transactionSelect = {
   id: true,
@@ -21,7 +21,7 @@ const transactionSelect = {
 
 @Injectable()
 export class TransactionRepository implements ITransactionRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientProvider) {}
 
   async create(
     entity: TransactionEntity,

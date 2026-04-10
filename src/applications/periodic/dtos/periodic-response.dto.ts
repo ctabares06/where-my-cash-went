@@ -1,4 +1,4 @@
-import { PeriodicProps } from '../../../domains/periodic/entities/periodic.entity';
+import { PeriodicProps } from '@/domains/periodic/entities/periodic.entity';
 
 export type PeriodicResponseDto = {
   data: PeriodicProps[];

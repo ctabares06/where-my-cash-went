@@ -1,14 +1,16 @@
-import { PeriodicDomainService } from '../../domains/periodic/domain/periodic.domain.service';
-import { CreatePeriodicDto } from './dtos/create-periodic.dto';
-import { UpdatePeriodicDto } from './dtos/update-periodic.dto';
+import { Injectable } from '@nestjs/common';
+import { PeriodicDomainService } from '@/domains/periodic/domain/periodic.domain.service';
+import { CreatePeriodicDto } from '@/applications/periodic/dtos/create-periodic.dto';
+import { UpdatePeriodicDto } from '@/applications/periodic/dtos/update-periodic.dto';
 import {
   PeriodicResponseDto,
   PeriodicListResponseDto,
-} from './dtos/periodic-response.dto';
+} from '@/applications/periodic/dtos/periodic-response.dto';
 
 /**
  * Periodic Application Service - Use case orchestration
  */
+@Injectable()
 export class PeriodicApplicationService {
   constructor(private readonly periodicDomainService: PeriodicDomainService) {}
 

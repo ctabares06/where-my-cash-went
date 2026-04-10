@@ -1,5 +1,5 @@
-import { Entity } from '../../base/entity';
-import { Cycle_T } from '../../../lib/ormClient/enums';
+import { Entity } from '@/domains/base/entity';
+import { Cycle_T } from '@/lib/ormClient/enums';
 
 /**
  * Periodic Entity - Pure domain object, no framework dependencies

@@ -1,4 +1,4 @@
-import { TagProps } from '../../../domains/tags/entities/tag.entity';
+import { TagProps } from '@/domains/tags/entities/tag.entity';
 
 export type TagResponseDto = {
   data: TagProps[];

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '../../../../../lib/ormClient/client';
-import { IPeriodicRepository } from '../../../../../domains/periodic/ports/periodic.repository.port';
+import { IPeriodicRepository } from '@/domains/periodic/ports/periodic.repository.port';
 import {
   PeriodicEntity,
   PeriodicProps,
   PeriodicWithTransactionProps,
-} from '../../../../../domains/periodic/entities/periodic.entity';
-import { PeriodicMapper } from '../mappers/periodic.mapper';
+} from '@/domains/periodic/entities/periodic.entity';
+import { PeriodicMapper } from '@/infrastructure/adapters/secondary/persistence/mappers/periodic.mapper';
+import { PrismaClientProvider } from '@/infrastructure/adapters/secondary/persistence/prisma/prisma-client.provider';
 
 const periodicSelect = {
   id: true,
@@ -20,7 +20,7 @@ const periodicSelect = {
 
 @Injectable()
 export class PeriodicRepository implements IPeriodicRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClientProvider) {}
 
   async create(
     entity: PeriodicEntity,

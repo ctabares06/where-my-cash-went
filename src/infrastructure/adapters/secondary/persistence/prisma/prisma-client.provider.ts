@@ -2,11 +2,10 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@/lib/ormClient/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Sql } from '@prisma/client/runtime/client';
 
 @Injectable()
 export class PrismaClientProvider implements OnModuleInit, OnModuleDestroy {
-  private readonly client: PrismaClient;
+  readonly client: PrismaClient;
 
   constructor(configVars: ConfigService) {
     const adapter = new PrismaPg({
@@ -34,10 +33,6 @@ export class PrismaClientProvider implements OnModuleInit, OnModuleDestroy {
 
   get periodic() {
     return this.client.periodic;
-  }
-
-  $queryRaw(query: TemplateStringsArray | Sql, ...rest: any[]) {
-    return this.client.$queryRaw(query, rest);
   }
 
   async onModuleInit() {

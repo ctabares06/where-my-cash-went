@@ -4,7 +4,7 @@ import { PrismaClientProvider } from '@/infrastructure/adapters/secondary/persis
 
 @Injectable()
 export class HealthRepository implements IHealthCheckPort {
-  constructor(private readonly prisma: PrismaClientProvider) { }
+  constructor(private readonly prisma: PrismaClientProvider) {}
 
   async isDatabaseConnected(): Promise<boolean> {
     try {

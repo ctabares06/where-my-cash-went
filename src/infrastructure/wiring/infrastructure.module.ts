@@ -11,7 +11,6 @@ import {
   TAG_REPOSITORY,
   PERIODIC_REPOSITORY,
   HEALTH_CHECK_PORT,
-  DATABASE_CLIENT,
 } from '@/infrastructure/wiring/tokens';
 
 @Module({

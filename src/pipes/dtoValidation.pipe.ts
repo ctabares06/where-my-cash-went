@@ -15,17 +15,13 @@ export class DtoValidationPipe implements PipeTransform {
     if (metadata.type !== 'body') {
       return value;
     }
-    console.log({ value, metadata }); // Debug log
 
-    const validateOne = async <T extends object>(item: T): Promise<T> => {
+    const validateOne = async (item: object): Promise<object> => {
       if (!metadata.metatype) {
         throw new InternalServerErrorException('No validation schema provided');
       }
 
-      const instance = plainToInstance<T>(
-        metadata.metatype as new (...args: any[]) => T,
-        item,
-      );
+      const instance = plainToInstance<object, object>(metadata.metatype, item);
       const errors = await validate(instance);
       if (errors.length > 0) {
         throw new BadRequestException([

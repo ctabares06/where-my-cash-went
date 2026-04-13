@@ -29,6 +29,7 @@ jobs:
   login-and-deploy:
     needs: lint-and-test
     runs-on: ubuntu-latest
+    environment: deploy-dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

@@ -3,10 +3,11 @@ import { AppModule } from '@/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
+  const HOSTNAME = process.env.HOSTNAME ?? '0.0.0.0';
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
   });
   // app.useGlobalPipes(new DtoValidationPipe());
-  await app.listen(process.env.PORT ?? 3000, process.env.HOSTNAME ?? '0.0.0.0');
+  await app.listen(process.env.PORT ?? 3000, HOSTNAME);
 }
 void bootstrap();

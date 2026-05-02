@@ -8,10 +8,13 @@ COPY pnpm-workspace.yaml ./
 
 RUN sh -c "npm i -g pnpm@10"
 
-RUN sh -c "pnpm install" 
+RUN sh -c "pnpm install"
 
 COPY . .
 
 RUN sh -c "pnpm build"
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+# Start the application
+CMD ["pnpm", "start:prod"]

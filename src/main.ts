@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/infrastructure/wiring/app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
@@ -7,7 +7,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
   });
+
+  app.enableCors({
+    origin: ['http://localhost:5173'],
+    credentials: true,
+  });
   // app.useGlobalPipes(new DtoValidationPipe());
   await app.listen(process.env.PORT ?? 3000, HOSTNAME);
 }
+
 void bootstrap();

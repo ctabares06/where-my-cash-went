@@ -551,7 +551,7 @@ src/
 ### Nginx Reverse Proxy (Production)
 
 - Listens on port 80
-- Proxies to `http://app:3000`
+- Proxies to `http://api:3000`
 - Handles health checks at `/health`
 - App service healthcheck verifies DB connectivity
 

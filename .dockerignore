@@ -1,0 +1,15 @@
+*
+!src/
+!nginx/
+!prisma/
+!test/
+!eslint.config.mjs
+!nest-cli.json
+!package*.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!prisma.config.ts
+!tsconfig.build.json
+!tsconfig.json
+!.prettierrc
+!.prettierignore

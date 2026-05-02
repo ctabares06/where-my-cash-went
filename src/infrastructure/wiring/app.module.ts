@@ -11,4 +11,4 @@ import { PrimaryAdapterModule } from '@/infrastructure/wiring/primary-adapter.mo
     PrimaryAdapterModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

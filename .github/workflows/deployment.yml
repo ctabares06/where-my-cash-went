@@ -45,7 +45,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
+      - name: Debug OIDC Claims
+        uses: github/actions-oidc-debugger@main
+        with:
+          audience: '${{ github.server_url }}/${{ github.repository_owner }}'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:

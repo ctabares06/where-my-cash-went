@@ -11,7 +11,7 @@ services:
           'CMD',
           'curl',
           '--fail',
-          'http://localhost:3000/health',
+          'http://api:3000/health',
         ]
       interval: 60s
       timeout: 10s

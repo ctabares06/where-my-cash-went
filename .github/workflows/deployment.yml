@@ -12,7 +12,7 @@ env:
   ECR_REPOSITORY_BASE: 570962435611.dkr.ecr.us-east-2.amazonaws.com
   ECS_CLUSTER: wmcw-cluster
   TASK_DEFINITION_FAMILY: where-my-cash-went
-  AWS_ROLE: arn:aws:iam::570962435611:role/GitHubActionsRole
+  AWS_ROLE: arn:aws:iam::570962435611:role/GithubActionsRole
 
 permissions:
   id-token: write

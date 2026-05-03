@@ -83,11 +83,11 @@ jobs:
         run: |
           docker build \
             -f nginx.dockerfile \
-            -t $ECR_REGISTRY/where-my-cash-went-nginx:$IMAGE_TAG \
-            -t $ECR_REGISTRY/where-my-cash-went-nginx:latest \
+            -t $ECR_REGISTRY/where-my-cash-went-proxy:$IMAGE_TAG \
+            -t $ECR_REGISTRY/where-my-cash-went-proxy:latest \
             .
-          docker push $ECR_REGISTRY/where-my-cash-went-nginx:$IMAGE_TAG
-          docker push $ECR_REGISTRY/where-my-cash-went-nginx:latest
+          docker push $ECR_REGISTRY/where-my-cash-went-proxy:$IMAGE_TAG
+          docker push $ECR_REGISTRY/where-my-cash-went-proxy:latest
 
       - name: Stop running ECS tasks
         run: |

@@ -14,11 +14,17 @@ export const auth = betterAuth({
   database: prismaAdapter(client, {
     provider: 'postgresql',
   }),
+  trustedOrigins: ['http://localhost:5173', 'http://localhost:80'],
   baseURL: process.env.BASE_URL,
   secret: process.env.AUTH_SECRET,
   basePath: '/auth',
   emailAndPassword: {
     enabled: true,
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
   },
   socialProviders: {
     google: {
